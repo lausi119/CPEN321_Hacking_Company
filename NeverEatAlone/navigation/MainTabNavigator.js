@@ -3,10 +3,10 @@ import { Platform } from 'react-native';
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
 
 import TabBarIcon from '../components/TabBarIcon';
-import CalScreen from '../screens/CalScreen';
+import CalTab from '../screens/CalTab';
 import FriendTab from '../screens/FriendTab';
-import SettingsScreen from '../screens/SettingsScreen';
-import LinksScreen from '../screens/LinksScreen';
+import SettingsTab from '../screens/SettingsTab';
+import LinksTab from '../screens/LinksTab';
 
 const FriendsStack = createStackNavigator({
   Links: FriendTab,
@@ -18,16 +18,17 @@ FriendsStack.navigationOptions = {
     <TabBarIcon
       focused={focused}
       name={Platform.OS === 'ios' ? `ios-people${focused ? '' : '-outline'}` : 'md-people'}
+
     />
   ),
 };
 
 const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen,
+  Settings: SettingsTab,
 });
 
 const CalStack = createStackNavigator({
-  Cal: CalScreen,
+  Cal: CalTab,
 });
 
 CalStack.navigationOptions = {
@@ -44,7 +45,7 @@ CalStack.navigationOptions = {
   ),
 };
 const LinksStack = createStackNavigator({
-  Cal: LinksScreen,
+  Links: LinksTab,
 });
 
 LinksStack.navigationOptions = {

@@ -3,10 +3,7 @@ import { createSwitchNavigator,
 createStackNavigator } from 'react-navigation';
 
 import MainTabNavigator from './MainTabNavigator';
-import CalScreen from '../screens/CalScreen';
 import LoginScreen from '../screens/LoginScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import LinksScreen from '../screens/LinksScreen';
 
 const AppStack = createStackNavigator(
   {

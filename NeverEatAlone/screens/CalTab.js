@@ -15,7 +15,7 @@ import { WebBrowser } from 'expo';
 
 import { MonoText } from '../components/StyledText';
 
-export default class CalScreen extends React.Component {
+export default class CalTab extends React.Component {
   static navigationOptions = {
     title: "Calendar",
   };
