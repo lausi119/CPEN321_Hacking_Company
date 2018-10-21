@@ -22,6 +22,9 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+	"facebookScheme": "fb305115093422180",
+	"facebookAppId": "305115093422180",
+	"facebookDisplayName": "NeverEatAlone"
   }
 }

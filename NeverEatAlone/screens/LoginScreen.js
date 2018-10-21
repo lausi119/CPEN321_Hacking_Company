@@ -1,24 +1,48 @@
 import React from 'react';
 import {
     Image,
-    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View, Platform
   } from 'react-native';
+import Icon from "react-native-vector-icons/Ionicons";
 
-export default class SettingsScreen extends React.Component {
+export default class LoginScreen extends React.Component {
   static navigationOptions = {
-    title: 'app.json',
+    header: null,
   };
+
+  async login(){
+    this.props.navigation.navigate("App");/*
+    const { type, token } = await 
+    Expo.Facebook.logInWithReadPermissionsAsync('305115093422180', {
+      permissions: ['public_profile','email','user_friends'],
+    });
+    if (type === 'success') {
+      
+      const response = await fetch(
+        `https://graph.facebook.com/me?access_token=${token}`);
+      alert(JSON.stringify(response.json()));
+    }*/
+  }
 
   render() {
     return (
-
         <View style={styles.container}>
-            
+        <View style={styles.loginButton}>
+           <Text>LOGIN</Text>
+          <TouchableOpacity>
+          <Icon
+           onPress={() => this.login()}
+           name={Platform.OS === 'ios'
+            ? 'ios-log-in'
+            : 'md-log-in'}
+            size={50}
+            />
+          </TouchableOpacity>
+          </View>
         </View>
     );
   }
@@ -28,5 +52,13 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
+    loginButton: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'column',
+    }
 });

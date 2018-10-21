@@ -2,11 +2,26 @@ import React from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { AppLoading, Asset, Font, Icon } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
+import Geolocation from 'react-native-geolocation-service';
 
 
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
+    hasLocationPermission: false,
+  };
+  componentDidMount() {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        global.location = "here";
+        alert(position);
+      },
+      (error) => {
+        console.log(error.message);
+      },
+      { enableHighAccuracy: true, 
+        timeout: 15000, maximumAge: 10000}
+    );
   };
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
@@ -21,7 +36,7 @@ export default class App extends React.Component {
       return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator />
+          <AppNavigator/>
         </View>
       );
     }
@@ -51,6 +66,7 @@ export default class App extends React.Component {
 
   _handleFinishLoading = () => {
     this.setState({ isLoadingComplete: true });
+    global.location = "null";
   };
 }
 

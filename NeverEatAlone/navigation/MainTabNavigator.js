@@ -8,6 +8,7 @@ import FriendTab from '../screens/FriendTab';
 import SettingsTab from '../screens/SettingsTab';
 import LinksTab from '../screens/LinksTab';
 
+
 const FriendsStack = createStackNavigator({
   Links: FriendTab,
 });
@@ -22,10 +23,6 @@ FriendsStack.navigationOptions = {
     />
   ),
 };
-
-const SettingsStack = createStackNavigator({
-  Settings: SettingsTab,
-});
 
 const CalStack = createStackNavigator({
   Cal: CalTab,
@@ -62,6 +59,9 @@ LinksStack.navigationOptions = {
   ),
 };
 
+const SettingsStack = createStackNavigator({
+  Settings: SettingsTab,
+});
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Settings',
@@ -73,9 +73,14 @@ SettingsStack.navigationOptions = {
   ),
 };
 
-export default createBottomTabNavigator({
+
+
+tabNav = createBottomTabNavigator(
+  {
   FriendsStack,
   CalStack,
   SettingsStack,
   LinksStack,
 });
+
+export default tabNav;
