@@ -9,12 +9,15 @@ export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
     hasLocationPermission: false,
+    refreshInterval: null,
   };
-  componentDidMount() {
+  getPosition(){
     Geolocation.getCurrentPosition(
       (position) => {
-        global.location = "here";
-        alert(position);
+        global.location = {
+          "lat": position.coords.latitude,
+          "long": position.coords.longitude,
+        }
       },
       (error) => {
         console.log(error.message);
@@ -22,7 +25,26 @@ export default class App extends React.Component {
       { enableHighAccuracy: true, 
         timeout: 15000, maximumAge: 10000}
     );
+  }
+  uploadPosition(){
+
+  }
+  refreshAll(){
+    this.getPosition();
+    this.uploadPosition();
+  }
+  startRefresh() {
+    this.refreshAll();
+    this.state.refreshInterval = 
+      setInterval(this.refreshAll.bind(this),60*1000);
   };
+  stopRefresh() {
+    clearInterval(this.state.refreshInterval);
+  }
+  componentDidMount(){
+    global.startRefresh = this.startRefresh.bind(this);
+    global.stopRefresh = this.stopRefresh.bind(this);
+  }
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
@@ -36,7 +58,7 @@ export default class App extends React.Component {
       return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator/>
+          <AppNavigator />
         </View>
       );
     }

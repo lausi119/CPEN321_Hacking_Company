@@ -15,17 +15,16 @@ export default class LoginScreen extends React.Component {
   };
 
   async login(){
-    this.props.navigation.navigate("App");/*
     const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync('305115093422180', {
       permissions: ['public_profile','email','user_friends'],
     });
     if (type === 'success') {
-      
-      const response = await fetch(
-        `https://graph.facebook.com/me?access_token=${token}`);
-      alert(JSON.stringify(response.json()));
-    }*/
+      global.accessToken = token;
+      global.loggedIn = true;
+      global.startRefresh();
+      this.props.navigation.navigate("App");
+    }
   }
 
   render() {

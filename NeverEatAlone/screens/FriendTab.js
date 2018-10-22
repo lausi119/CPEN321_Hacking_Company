@@ -10,6 +10,8 @@ export default class FriendTab extends React.Component {
 
   constructor(props){
     super(props);
+    this.refreshFriends();
+    setInterval(this.refreshFriends.bind(this), 60000)
     this.state = {
       /*
       1: FriendList
@@ -17,46 +19,58 @@ export default class FriendTab extends React.Component {
       3: Venue select
       */
       screen: 1, 
+      friendsOnline:[],
+      friendsBusy:[],
       finishedLoading: true,
       title: "Friends",
       selectedFriend: {
       },
-      friendsOnline: [
-        {
-          id: 0,
-          name: "Harsh Arora",
-          distance: 5,
-        },
-        {
-          id: 1,
-          name: "Laurenz Schmielau",
-          distance: 15,
-        },
-        {
-          id: 3,
-          name: "Zeyad Tamimi",
-          distance: 15,
-        },
-        {
-          id: 4,
-          name: "Charles Babbage",
-          distance: 15,
-        },
-        {
-          id: 5,
-          name: "Grace Hopper",
-          distance: 15,
-        },
-      ],
-      friendsBusy: [
-        {
-          id: 2,
-          name: "Matt Chernoff",
-          distance: 2,
-        },
-      ]
     }
   }
+  parseFriends(data){
+    for(var i = 0; i < data.length; i++){
+      n = data[i].name.indexOf(' ');
+      if(n > 0){
+      data[i]['firstName'] = data[i].name.substring(0,n);
+      }
+      else{
+        data[i]['firstName'] = data[i].name;
+      }
+      
+
+    }
+    return data;
+  }
+  async refreshFriends(){
+    if(!!global.accessToken){
+      fetch(`https://graph.facebook.com/me?fields=friends&access_token=${global.accessToken}`, 
+      {
+        method: "GET",
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {return response.json();})
+        .then((responseData) => {
+          this.setState(previousState  => {
+            newState = this.state;
+            newState.friendsOnline = this.parseFriends(responseData.friends.data);
+            return {newState};
+          });
+        }).catch((error) => {
+          alert(error);
+        });
+      
+        //Poll server for friends' location
+    }
+    else{
+      alert('not yet');
+    }
+  }
+  static navigationOptions = {
+    header: null,
+  };
   chooseVenueType(type){
     //yelp.api.call??
     this.setState(previousState  => {
@@ -66,9 +80,6 @@ export default class FriendTab extends React.Component {
     });
     finishedLoading = false;
   }
-  static navigationOptions = {
-    header: null,
-  };
   chooseFriend(item, online){
     item['online'] = online;
     this.setState(previousState  => {
@@ -109,7 +120,7 @@ export default class FriendTab extends React.Component {
           : 'md-arrow-dropleft'}
       />
         <Text style={styles.headline}
-        >{this.state.selectedFriend.name}</Text>
+        >{this.state.selectedFriend.firstName}</Text>
         <View style={[
           this.state.selectedFriend.online ?
           styles.green: styles.red,
@@ -159,7 +170,7 @@ export default class FriendTab extends React.Component {
               : 'md-arrow-dropleft'}
           />
         <Text style={styles.headline}
-        >{this.state.selectedFriend.name}</Text>
+        >{this.state.selectedFriend.firstName}</Text>
         <View style={[
           this.state.selectedFriend.online ?
           styles.green: styles.red,
