@@ -26,7 +26,7 @@ export default class App extends React.Component {
         timeout: 15000, maximumAge: 10000}
     );
   }
-  uploadPosition(){
+  /*uploadPosition(){
     timestamp = Date.now();
     fetch(`https://nevereatalone321.herokuapp.com/location`, 
     {
@@ -54,10 +54,10 @@ export default class App extends React.Component {
         alert(error);
       });
 
-  }
+  }*/
   refreshAll(){
     this.getPosition();
-    this.uploadPosition();
+    //this.uploadPosition();
   }
   startRefresh() {
     this.refreshAll();

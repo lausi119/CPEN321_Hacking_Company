@@ -45,9 +45,29 @@ export default class FriendTab extends React.Component {
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
       Math.abs(loc1.long-loc2.long));
   }
+  getHashedId(id){
+    fetch(`https://nevereatalone321.herokuapp.com/idHash`, 
+      {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'id': id,
+        }),
+      })
+        .then(response => {return response.json()})
+        .then((responseData) => {
+          alert(JSON.stringify(responseData));
+          global.id = responseData.id;
+        }).catch((error) => {
+          alert(error);
+        });
+  }
   async refreshFriends(first=false){
     if(!!global.accessToken){
-      fetch(`https://graph.facebook.com/me?fields=id,name,email,friends,&access_token=${global.accessToken}`, 
+      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.accessToken}`, 
       {
         method: "GET",
         headers: {
@@ -58,7 +78,8 @@ export default class FriendTab extends React.Component {
         .then(response => {return response.json();})
         .then((responseData) => {
           global.name = responseData.name;
-          global.id = responseData.id;
+          this.getHashedId(responseData.id);
+          
           global.email = responseData.email;
           this.setState(previousState  => {
             newState = this.state;
@@ -69,8 +90,23 @@ export default class FriendTab extends React.Component {
           alert(error);
         });
 
+        fetch(`https://nevereatalone321.herokuapp.com/TEST`, 
+      {
+        method: "GET",
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {return response.text();})
+        .then((responseData) => {
+          alert(responseData);
+        }).catch((error) => {
+          alert(error);
+        });
+
         //Poll server for friends' location
-        fetch(`https://nevereatalone321.herokuapp.com/friendslocation`, 
+        /*fetch(`https://nevereatalone321.herokuapp.com/friendslocation`, 
         {
           method: "GET",
           headers: {
@@ -93,7 +129,7 @@ export default class FriendTab extends React.Component {
             });
           }).catch((error) => {
             alert(error);
-          });
+          });*/
     }
     else{
       alert('not yet');

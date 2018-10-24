@@ -15,6 +15,15 @@ export default class SettingsTab extends React.Component {
   constructor(props){
     super(props);
     this.navigation = props.navigation;
+    this.state = {id: ""};
+    setInterval(this.refreshId.bind(this),1000);
+  }
+  refreshId(){
+    this.setState(previousState  => {
+      newState = this.state;
+      newState.id = global.id;
+      return {newState};
+    });
   }
   static navigationOptions = {
     header: null,
@@ -42,6 +51,7 @@ export default class SettingsTab extends React.Component {
       <View style={styles.container}>
         <ScrollView>
           <View style={styles.listItemA}>
+          <Text>{this.state.id}</Text>
           </View>
           <TouchableOpacity style={styles.listItemB}
             onPress={this.logout.bind(this)}>
