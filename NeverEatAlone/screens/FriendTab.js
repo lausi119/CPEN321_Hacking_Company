@@ -10,7 +10,7 @@ export default class FriendTab extends React.Component {
 
   constructor(props){
     super(props);
-    this.refreshFriends();
+    this.refreshFriends(first=true);
     setInterval(this.refreshFriends.bind(this), 60000)
     this.state = {
       /*
@@ -41,9 +41,13 @@ export default class FriendTab extends React.Component {
     }
     return data;
   }
-  async refreshFriends(){
+  locationDifference(loc1,loc2){
+    return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
+      Math.abs(loc1.long-loc2.long));
+  }
+  async refreshFriends(first=false){
     if(!!global.accessToken){
-      fetch(`https://graph.facebook.com/me?fields=friends&access_token=${global.accessToken}`, 
+      fetch(`https://graph.facebook.com/me?fields=id,name,email,friends,&access_token=${global.accessToken}`, 
       {
         method: "GET",
         headers: {
@@ -53,6 +57,9 @@ export default class FriendTab extends React.Component {
       })
         .then(response => {return response.json();})
         .then((responseData) => {
+          global.name = responseData.name;
+          global.id = responseData.id;
+          global.email = responseData.email;
           this.setState(previousState  => {
             newState = this.state;
             newState.friendsOnline = this.parseFriends(responseData.friends.data);
@@ -61,8 +68,32 @@ export default class FriendTab extends React.Component {
         }).catch((error) => {
           alert(error);
         });
-      
+
         //Poll server for friends' location
+        fetch(`https://nevereatalone321.herokuapp.com/friendslocation`, 
+        {
+          method: "GET",
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => {return response.json();})
+          .then((responseData) => {
+            this.setState(previousState  => {
+              newState = this.state;
+              for(var i = 0; i < responseData.friends.length; i++){
+                for(var j = 0; j < newState.friendsOnline.length; j++){
+                  if(newState.friendsOnline[j].id == responseData.friends[i].id){
+                    newState.friendsOnline[j].distance = this.locationDifference(responseData.friends[i].location, global.location);
+                  }
+                }
+              }
+              return {newState};
+            });
+          }).catch((error) => {
+            alert(error);
+          });
     }
     else{
       alert('not yet');

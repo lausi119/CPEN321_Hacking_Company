@@ -27,6 +27,32 @@ export default class App extends React.Component {
     );
   }
   uploadPosition(){
+    timestamp = Date.now();
+    fetch(`https://nevereatalone321.herokuapp.com/location`, 
+    {
+      method: "POST",
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: {
+        id: global.id,
+        location: global.location,
+      },
+    })
+      .then(response => {return response.json();})
+      .then((responseData) => {
+        global.name = responseData.name;
+        global.id = responseData.id;
+        global.email = responseData.email;
+        this.setState(previousState  => {
+          newState = this.state;
+          newState.friendsOnline = this.parseFriends(responseData.friends.data);
+          return {newState};
+        });
+      }).catch((error) => {
+        alert(error);
+      });
 
   }
   refreshAll(){
