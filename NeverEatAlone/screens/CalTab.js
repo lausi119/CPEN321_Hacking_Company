@@ -1,20 +1,133 @@
-import React from 'react';
+import React from "react";
 import {
   Image, Platform,
   ScrollView, StyleSheet, 
   Text, TouchableOpacity,
   View, Button,
   TextInput,
-} from 'react-native';
-import { Agenda } from 'react-native-calendars';
-import Touchable from 'react-native-platform-touchable';
+} from "react-native";
+import { Agenda } from "react-native-calendars";
+import Touchable from "react-native-platform-touchable";
 import Icon from "react-native-vector-icons/Ionicons";
-import DateTimePicker from 'react-native-modal-datetime-picker';
+import DateTimePicker from "react-native-modal-datetime-picker";
+
+const styles = StyleSheet.create({
+  editingButton: {
+    borderRadius: 8,
+    width: 100,
+    margin: 20,
+    height: 35,
+    borderColor: "#2984E3",
+    borderWidth: 2,
+    backgroundColor: "#fff",
+  },
+  timeText: {
+    flex: 1,
+    fontSize: 20,
+  },
+  timeSelect: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    height: 40,
+    margin: 5,
+    padding: 5,
+    borderColor: "red",
+    borderWidth: 1,
+  },
+  textBox: {
+    backgroundColor: "#fff",
+    height: 40,
+    margin: 5,
+    padding: 5,
+    borderColor: "blue",
+    borderWidth: 1,
+  },
+  eventText: {
+    paddingLeft: 10,
+    paddingTop: 5,
+    fontSize: 15,
+  },
+  event: {
+    opacity: 0.75 ,
+    position: "absolute",
+    zIndex: 6,
+    width: "100%",
+    marginLeft: 70,
+    flex: 1,
+    borderRadius: 4,
+    borderWidth: 1,
+    backgroundColor: "#4A9CEA",
+  },
+  timeBlock:{
+    flex: 1,
+    width: "100%",
+    height: 50,
+    borderTopWidth: 1,
+    borderColor: "#c5c5c5",
+    backgroundColor: "#f0f0f0",
+  },
+  hour: {
+    paddingTop: 5,
+    paddingLeft: 5,
+  },
+  emptyDate: {
+    height: 15,
+    flex:1,
+    paddingTop: 30
+  },
+  item: {
+    backgroundColor: "white",
+    flex: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+    marginTop: 17
+  },
+  knob:{
+    height: 10,
+    width: 50,
+    borderRadius: 14,
+    backgroundColor: "#d0d0d0",
+  },
+  bottomBar:{
+    position: "absolute",
+    bottom: -40,
+    height: 70,
+    flex: 1,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "stretch",
+    backgroundColor: "#fbfbfb",
+  },
+  headline:{
+    flex: 1,
+    textAlign: "center",
+    fontSize: 20,
+    bottom: 0,
+    marginTop: 15,
+    padding: 10,
+    fontWeight: "bold",
+  },
+  header: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    height: 65,
+    backgroundColor: "#fff",
+  },
+  headerButton: {
+    height: "100%",
+    padding: 0,
+    margin: 25,
+  },  
+});
 
 export default class CalTab extends React.Component {
   constructor(props){
     super(props);
-    now = new Date();
+    var now = new Date();
     this.state = {
       /**
        * 1: Month
@@ -25,7 +138,7 @@ export default class CalTab extends React.Component {
       isTimePickerVisible: false,
       editingEvent: null,
     };
-    hours = [{
+    var hours = [{
       "key": 0,
       "time": "12 am",
     }];
@@ -36,7 +149,7 @@ export default class CalTab extends React.Component {
     for(var i = 0; i < 24; i++){
       hours[i+1] = {
         key: i+1,
-      }
+      };
       hours[i+1].time = i > 11
       ? i%12+1 + " pm"
       : i%12+1 + " am";
@@ -70,25 +183,25 @@ export default class CalTab extends React.Component {
   }
 
   addEvent(){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.screen = 2;
-      now = new Date();
-      end = new Date(now);
+      var now = new Date();
+      var later = new Date(now);
       now.setMinutes(0);
-      end.setMinutes(0);
-      end.setHours(end.getHours()+1);
+      later.setMinutes(0);
+      later.setHours(later.getHours()+1);
       newState.editingEvent = {
-        'title': "",
-        'start': now,
-        'end': end,
+        "title": "",
+        "start": now,
+        "end": later,
       }
       return {newState};
     });
   }
 
   editEvent(event){
-    this.setState(previousState  => {
+    this.setState((previousState)  => {
       newState = previousState;
       newState.screen = 2;
       return {newState};
@@ -100,38 +213,34 @@ export default class CalTab extends React.Component {
    * @param {*} time Date object
    */
   timeToFraction(time){
-    h = time.getHours();
-    m = time.getMinutes();
+    var h = time.getHours();
+    var m = time.getMinutes();
     return h + m/60;
   }
 
   saveEvent(){
-    found = false;
-    day = this.getDateFormat(this.state.day);
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newEvent = {
+        title: this.state.editingEvent.title,
+        startTime: this.timeToFraction(this.state.editingEvent.start),
+        endTime: this.timeToFraction(this.state.editingEvent.end),
+      }
+      var found = false;
+      var day = this.getDateFormat(this.state.day);
+      var newState = previousState;
       for(var i = 0; i < newState.eventDates.length; i++){
-        if(newState.eventDates[i].date == day){
+        var eventDate = newState.eventDates[i];
+        if(eventDate.date === day){
           found = true;
-          newState.eventDates[i].events.push({
-            key: newState.eventDates[i].events.length,
-            title: this.state.editingEvent.title,
-            startTime: this.timeToFraction(this.state.editingEvent.start),
-            endTime: this.timeToFraction(this.state.editingEvent.end),
-          });
+          newEvent.key = eventDate.events.length;
+          newState.eventDates[i].events.push(newEvent);
         }
       }
       if(!found){
+        newEvent.key = 0;
         this.state.eventDates.push({
           date: day,
-          events: [
-            {
-              key: 0,
-              title: this.state.editingEvent.title,
-              startTime: this.timeToFraction(this.state.editingEvent.start),
-              endTime: this.timeToFraction(this.state.editingEvent.end),
-            }
-          ]
+          events: [newEvent],
         });
       }
       newState.screen = 1;
@@ -189,8 +298,8 @@ export default class CalTab extends React.Component {
     var y = date.getFullYear().toString();
     var m = (date.getMonth() + 1).toString();
     var d = date.getDate().toString();
-    (d.length == 1) && (d = '0' + d);
-    (m.length == 1) && (m = '0' + m);
+    (d.length == 1) && (d = "0" + d);
+    (m.length == 1) && (m = "0" + m);
     var re = `${y}-${m}-${d}`;
     return re;
   }
@@ -201,7 +310,7 @@ export default class CalTab extends React.Component {
     if(m < 10){
       m = "0" + m;
     }
-    ampm = h > 11 ? 'PM' : 'AM';
+    ampm = h > 11 ? "PM" : "AM";
     h %= 12;
     if(h == 0){
       h = 12;
@@ -276,9 +385,9 @@ export default class CalTab extends React.Component {
     return (<View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton}>
-          <Icon name={Platform.OS === 'ios'
-          ? 'ios-cloud-upload'
-          : 'md-cloud-upload'}
+          <Icon name={Platform.OS === "ios"
+          ? "ios-cloud-upload"
+          : "md-cloud-upload"}
             size={30}
           />
         </TouchableOpacity>
@@ -286,9 +395,9 @@ export default class CalTab extends React.Component {
         <TouchableOpacity style={styles.headerButton} 
           backgroundColor="green"
           onPress={this.addEvent.bind(this)}>
-          <Icon name={Platform.OS === 'ios'
-          ? 'ios-add-circle-outline'
-          : 'md-add-circle-outline'}
+          <Icon name={Platform.OS === "ios"
+          ? "ios-add-circle-outline"
+          : "md-add-circle-outline"}
             size={30}
           />
         </TouchableOpacity>
@@ -300,7 +409,7 @@ export default class CalTab extends React.Component {
       renderEmptyDate={this.renderEmptyDate.bind(this)}
       renderEmptyData = {this.renderDay.bind(this)}
       onDayPress={(day)=>{this.changeDay(day)}}
-      //renderDay={(day, item) => (<Text>{day ? day.day: 'item'}</Text>)}
+      //renderDay={(day, item) => (<Text>{day ? day.day: "item"}</Text>)}
       />
     </View>
     </View>)
@@ -311,9 +420,9 @@ export default class CalTab extends React.Component {
         <View style={styles.header}>
           <TouchableOpacity style={styles.headerButton}
           onPress={this.returnToCalendar.bind(this)}>
-          <Icon name={Platform.OS === 'ios'
-            ? 'ios-arrow-dropleft'
-            : 'md-arrow-dropleft'}
+          <Icon name={Platform.OS === "ios"
+            ? "ios-arrow-dropleft"
+            : "md-arrow-dropleft"}
               size={30}
             />
           </TouchableOpacity>
@@ -344,16 +453,16 @@ export default class CalTab extends React.Component {
               <Text style={styles.timeText}>
                 {this.getTimeFormat(this.state.editingEvent.end)}</Text>
             </TouchableOpacity>
-            <View style={{flexDirection:"row",justifyContent: 'center'}}>
+            <View style={{flexDirection:"row",justifyContent: "center"}}>
             <TouchableOpacity style={styles.editingButton}
               onPress={this.saveEvent.bind(this)}
             >
-              <Text style={{fontSize:25,textAlign:'center'}}>Save</Text>
+              <Text style={{fontSize:25,textAlign:"center"}}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.editingButton}
               onPress={this.returnToCalendar.bind(this)}
             >
-              <Text style={{fontSize:25,textAlign:'center'}}>Cancel</Text>
+              <Text style={{fontSize:25,textAlign:"center"}}>Cancel</Text>
             </TouchableOpacity>
             </View>
             
@@ -362,116 +471,3 @@ export default class CalTab extends React.Component {
     }
   }
 }
-
-const styles = StyleSheet.create({
-  editingButton: {
-    borderRadius: 8,
-    width: 100,
-    margin: 20,
-    height: 35,
-    borderColor: "#2984E3",
-    borderWidth: 2,
-    backgroundColor: "#fff",
-  },
-  timeText: {
-    flex: 1,
-    fontSize: 20,
-  },
-  timeSelect: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    height: 40,
-    margin: 5,
-    padding: 5,
-    borderColor: 'red',
-    borderWidth: 1,
-  },
-  textBox: {
-    backgroundColor: "#fff",
-    height: 40,
-    margin: 5,
-    padding: 5,
-    borderColor: 'blue',
-    borderWidth: 1,
-  },
-  eventText: {
-    paddingLeft: 10,
-    paddingTop: 5,
-    fontSize: 15,
-  },
-  event: {
-    opacity: 0.75,
-    position: 'absolute',
-    zIndex: 6,
-    width: '100%',
-    marginLeft: 70,
-    flex: 1,
-    borderRadius: 4,
-    borderWidth: 1,
-    backgroundColor: "#4A9CEA",
-  },
-  timeBlock:{
-    flex: 1,
-    width: '100%',
-    height: 50,
-    borderTopWidth: 1,
-    borderColor: "#c5c5c5",
-    backgroundColor: "#f0f0f0",
-  },
-  hour: {
-    paddingTop: 5,
-    paddingLeft: 5,
-  },
-  emptyDate: {
-    height: 15,
-    flex:1,
-    paddingTop: 30
-  },
-  item: {
-    backgroundColor: 'white',
-    flex: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
-    marginTop: 17
-  },
-  knob:{
-    height: 10,
-    width: 50,
-    borderRadius: 14,
-    backgroundColor: "#d0d0d0",
-  },
-  bottomBar:{
-    position: "absolute",
-    bottom: -40,
-    height: 70,
-    flex: 1,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: 'center',
-    alignItems: 'stretch',
-    backgroundColor: '#fbfbfb',
-  },
-  headline:{
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 20,
-    bottom: 0,
-    marginTop: 15,
-    padding: 10,
-    fontWeight: "bold",
-  },
-  header: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-    height: 65,
-    backgroundColor: "#fff",
-  },
-  headerButton: {
-    height: "100%",
-    padding: 0,
-    margin: 25,
-  },  
-});

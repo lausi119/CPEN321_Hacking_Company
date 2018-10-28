@@ -1,17 +1,92 @@
-import React from 'react';
+import React from "react";
 import { View,ScrollView, StyleSheet, Text, ListView,
   TouchableOpacity,
-  ActivityIndicator} from 'react-native';
+  ActivityIndicator} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { ExpoLinksView } from '@expo/samples';
-import { Platform } from 'react-native';
+import { ExpoLinksView } from "@expo/samples";
+import { Platform } from "react-native";
+
+
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 26,
+    color: "#4f603c",
+    paddingLeft: 10,
+  },
+  container: {
+    flex: 1,
+    paddingTop: 15,
+    backgroundColor: "#fff",
+  },
+  headline:{
+    flex: 1,
+    textAlign: "center",
+    fontSize: 20,
+    bottom: 0,
+    padding: 10,
+    fontWeight: "bold"
+  },
+  header: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    height: 50,
+    backgroundColor: "#fff"
+  },
+  green: {
+    backgroundColor: "green",
+  },
+  red: {
+    backgroundColor: "red",
+  },
+  h2: {
+    flex: 1,
+    paddingTop: 15,
+    paddingLeft: 15,
+    marginBottom: 7,
+    fontSize: 26,
+    backgroundColor: "#fff",
+  },
+  circle: {
+    marginTop: 17,
+    marginRight: 25,
+    width: 15,
+    height: 15,
+    borderRadius: 14,
+  },
+  friend: {
+    borderRadius: 14,
+    borderColor: "#000",
+    borderWidth: 0.5,
+    paddingLeft: 8,
+    marginLeft: 15,
+    paddingTop: 5,
+    paddingBottom: 5,
+  },
+  menuOption: {
+    flexDirection: "row",
+    borderRadius: 14,
+    borderColor: "#000",
+    borderWidth: 0.5,
+    paddingLeft: 8,
+    marginLeft: 15,
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginTop: 5,
+  },
+  icon: {
+    padding: 4,
+    fontSize: 36,
+    color: "#4f603c"
+  },
+});
 
 export default class FriendTab extends React.Component {
 
   constructor(props){
     super(props);
-    this.refreshFriends(first=true);
-    setInterval(this.refreshFriends.bind(this), 60000)
+    this.refreshFriends(true);
+    setInterval(this.refreshFriends.bind(this), 60000);
     this.state = {
       /*
       1: FriendList
@@ -25,19 +100,18 @@ export default class FriendTab extends React.Component {
       title: "Friends",
       selectedFriend: {
       },
-    }
+    };
   }
   parseFriends(data){
     for(var i = 0; i < data.length; i++){
-      n = data[i].name.indexOf(' ');
+      friend = data[i];
+      var n = friend.name.indexOf(" ");
       if(n > 0){
-      data[i]['firstName'] = data[i].name.substring(0,n);
+      data[i]["firstName"] = friend.name.substring(0,n);
       }
       else{
-        data[i]['firstName'] = data[i].name;
+        data[i]["firstName"] = friend.name;
       }
-      
-
     }
     return data;
   }
@@ -45,19 +119,19 @@ export default class FriendTab extends React.Component {
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
       Math.abs(loc1.long-loc2.long));
   }
-  getHashedId(id){
-    fetch(`https://nevereatalone321.herokuapp.com/idHash`, 
+  getHashedId(myId){
+    fetch("https://nevereatalone321.herokuapp.com/idHash", 
       {
         method: "POST",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          'id': id,
+          "id": myId,
         }),
       })
-        .then(response => {return response.json()})
+        .then((response) => {return response.json();})
         .then((responseData) => {
           global.id = responseData.id;
         }).catch((error) => {
@@ -65,16 +139,16 @@ export default class FriendTab extends React.Component {
         });
   }
   async refreshFriends(first=false){
-    if(!!global.accessToken){
+    if(global.accessToken){
       fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.accessToken}`, 
       {
         method: "GET",
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       })
-        .then(response => {return response.json();})
+        .then((response) => {return response.json();})
         .then((responseData) => {
           global.name = responseData.name;
           this.getHashedId(responseData.id);
@@ -89,13 +163,13 @@ export default class FriendTab extends React.Component {
           alert(error);
         });
 
-        //Poll server for friends' location
+        //Poll server for friends" location
         /*fetch(`https://nevereatalone321.herokuapp.com/friendslocation`, 
         {
           method: "GET",
           headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
         })
           .then(response => {return response.json();})
@@ -121,25 +195,25 @@ export default class FriendTab extends React.Component {
   };
   chooseVenueType(type){
     //yelp.api.call??
-    this.setState(previousState  => {
-      newState = this.state;
+    this.setState((previousState) => {
+      var newState = previousState;
       newState.screen = 3;
+      newState.finishedLoading = false;
       return {newState};
     });
-    finishedLoading = false;
   }
   chooseFriend(item, online){
-    item['online'] = online;
-    this.setState(previousState  => {
-      newState = this.state;
+    item["online"] = online;
+    this.setState((previousState) => {
+      var newState = previousState;
       newState.screen = 2;
       newState.selectedFriend = item;
       return {newState};
     });
   }
   reset(){
-    this.setState(previousState  => {
-      newState = this.state;
+    this.setState((previousState) => {
+      var newState = previousState;
       newState.screen = 1;
       newState.selectedFriend = {};
       return {newState};
@@ -151,21 +225,21 @@ export default class FriendTab extends React.Component {
       return <ActivityIndicator
         size="large"
         color="#000"
-      />
+      />;
     }
   }
 
   render() {
     //CHOOSE TYPE OF VENUE/MESSAGE
-    if(this.state.screen == 2){
+    if(this.state.screen === 2){
       return <View style={styles.container}>
       <View style={styles.header}>
       <Icon 
         onPress={this.reset.bind(this)}
         style={styles.icon}
-        name = {Platform.OS === 'ios'
-          ? 'ios-arrow-dropleft'
-          : 'md-arrow-dropleft'}
+        name = {Platform.OS === "ios"
+          ? "ios-arrow-dropleft"
+          : "md-arrow-dropleft"}
       />
         <Text style={styles.headline}
         >{this.state.selectedFriend.firstName}</Text>
@@ -177,27 +251,27 @@ export default class FriendTab extends React.Component {
         <View>
         <TouchableOpacity style={styles.menuOption}
         onPress={() => this.chooseVenueType("Restaurant")}>
-        <Icon name={Platform.OS === 'ios'
-        ? 'ios-restaurant'
-        : 'md-restaurant'}
+        <Icon name={Platform.OS === "ios"
+        ? "ios-restaurant"
+        : "md-restaurant"}
         size={40}/>
         <Text style={styles.text}>
           Restaurants
         </Text></TouchableOpacity>
         <TouchableOpacity style={styles.menuOption}
         onPress={() => this.chooseVenueType("Cafe")}>
-        <Icon name={Platform.OS === 'ios'
-        ? 'ios-cafe'
-        : 'md-cafe'}
+        <Icon name={Platform.OS === "ios"
+        ? "ios-cafe"
+        : "md-cafe"}
         size={40}/>
         <Text style={styles.text}>
           Cafes
         </Text></TouchableOpacity>
         <TouchableOpacity style={styles.menuOption}
         onPress={() => this.chooseVenueType("Bar")}
-        ><Icon name={Platform.OS === 'ios'
-        ? 'ios-wine'
-        : 'md-wine'}
+        ><Icon name={Platform.OS === "ios"
+        ? "ios-wine"
+        : "md-wine"}
         size={40}/>
         <Text style={styles.text}>
           Bars
@@ -213,9 +287,9 @@ export default class FriendTab extends React.Component {
           <Icon 
             onPress={() => this.chooseFriend(this.state.selectedFriend,this.state.selectedFriend.online)}
             style={styles.icon}
-            name = {Platform.OS === 'ios'
-              ? 'ios-arrow-dropleft'
-              : 'md-arrow-dropleft'}
+            name = {Platform.OS === "ios"
+              ? "ios-arrow-dropleft"
+              : "md-arrow-dropleft"}
           />
         <Text style={styles.headline}
         >{this.state.selectedFriend.firstName}</Text>
@@ -277,77 +351,3 @@ export default class FriendTab extends React.Component {
     }
   }
 }
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 26,
-    color: '#4f603c',
-    paddingLeft: 10,
-  },
-  container: {
-    flex: 1,
-    paddingTop: 15,
-    backgroundColor: '#fff',
-  },
-  headline:{
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 20,
-    bottom: 0,
-    padding: 10,
-    fontWeight: "bold"
-  },
-  header: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-    height: 50,
-    backgroundColor: "#fff"
-  },
-  green: {
-    backgroundColor: "green",
-  },
-  red: {
-    backgroundColor: "red",
-  },
-  h2: {
-    flex: 1,
-    paddingTop: 15,
-    paddingLeft: 15,
-    marginBottom: 7,
-    fontSize: 26,
-    backgroundColor: "#fff",
-  },
-  circle: {
-    marginTop: 17,
-    marginRight: 25,
-    width: 15,
-    height: 15,
-    borderRadius: 14,
-  },
-  friend: {
-    borderRadius: 14,
-    borderColor: "#000",
-    borderWidth: 0.5,
-    paddingLeft: 8,
-    marginLeft: 15,
-    paddingTop: 5,
-    paddingBottom: 5,
-  },
-  menuOption: {
-    flexDirection: "row",
-    borderRadius: 14,
-    borderColor: "#000",
-    borderWidth: 0.5,
-    paddingLeft: 8,
-    marginLeft: 15,
-    paddingTop: 5,
-    paddingBottom: 5,
-    marginTop: 5,
-  },
-  icon: {
-    padding: 4,
-    fontSize: 36,
-    color: '#4f603c'
-  },
-});
