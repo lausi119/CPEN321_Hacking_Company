@@ -279,7 +279,7 @@ export default class FriendTab extends React.Component {
         </View>
       </View>);
     }
-    //CHOOSE VENUE
+    //CHOOSE VENUE 
     else if(this.state.screen === 3){
       return (
         <View style={styles.container}>
