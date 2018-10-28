@@ -1,12 +1,12 @@
-import React from 'react';
-import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import React from "react";
+import { Platform } from "react-native";
+import { createStackNavigator, createBottomTabNavigator } from "react-navigation";
 
-import TabBarIcon from '../components/TabBarIcon';
-import CalTab from '../screens/CalTab';
-import FriendTab from '../screens/FriendTab';
-import SettingsTab from '../screens/SettingsTab';
-import LinksTab from '../screens/LinksTab';
+import TabBarIcon from "../components/TabBarIcon";
+import CalTab from "../screens/CalTab";
+import FriendTab from "../screens/FriendTab";
+import SettingsTab from "../screens/SettingsTab";
+import LinksTab from "../screens/LinksTab";
 
 
 const FriendsStack = createStackNavigator({
@@ -14,11 +14,11 @@ const FriendsStack = createStackNavigator({
 });
 
 FriendsStack.navigationOptions = {
-  tabBarLabel: 'Friends',
+  tabBarLabel: "Friends",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? `ios-people${focused ? '' : '-outline'}` : 'md-people'}
+      name={Platform.OS === "ios" ? `ios-people${focused ? "" : "-outline"}` : "md-people"}
 
     />
   ),
@@ -29,14 +29,14 @@ const CalStack = createStackNavigator({
 });
 
 CalStack.navigationOptions = {
-  tabBarLabel: 'Calendar',
+  tabBarLabel: "Calendar",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
       name={
-        Platform.OS === 'ios'
-          ? `ios-calendar${focused ? '' : '-outline'}`
-          : 'md-calendar'
+        Platform.OS === "ios"
+          ? `ios-calendar${focused ? "" : "-outline"}`
+          : "md-calendar"
       }
     />
   ),
@@ -46,14 +46,14 @@ const LinksStack = createStackNavigator({
 });
 
 LinksStack.navigationOptions = {
-  tabBarLabel: 'Links',
+  tabBarLabel: "Links",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
       name={
-        Platform.OS === 'ios'
-          ? `ios-link${focused ? '' : '-outline'}`
-          : 'md-link'
+        Platform.OS === "ios"
+          ? `ios-link${focused ? "" : "-outline"}`
+          : "md-link"
       }
     />
   ),
@@ -64,18 +64,18 @@ const SettingsStack = createStackNavigator({
 });
 
 SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
+  tabBarLabel: "Settings",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === 'ios' ? `ios-settings${focused ? '' : '-outline'}` : 'md-settings'}
+      name={Platform.OS === "ios" ? `ios-settings${focused ? "" : "-outline"}` : "md-settings"}
     />
   ),
 };
 
 
 
-tabNav = createBottomTabNavigator(
+const tabNav = createBottomTabNavigator(
   {
   FriendsStack,
   CalStack,

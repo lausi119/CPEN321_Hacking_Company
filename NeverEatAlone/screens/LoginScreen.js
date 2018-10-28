@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
     Image,
     ScrollView,
@@ -6,8 +6,23 @@ import {
     Text,
     TouchableOpacity,
     View, Platform
-  } from 'react-native';
+  } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+  }
+});
 
 export default class LoginScreen extends React.Component {
   static navigationOptions = {
@@ -17,10 +32,10 @@ export default class LoginScreen extends React.Component {
   async login(){
     //this.props.navigation.navigate("App");
     const { type, token } = await 
-    Expo.Facebook.logInWithReadPermissionsAsync('305115093422180', {
-      permissions: ['public_profile','email','user_friends'],
+    Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
+      permissions: ["public_profile","email","user_friends"],
     });
-    if (type === 'success') {
+    if (type === "success") {
       global.accessToken = token;
       global.loggedIn = true;
       global.startRefresh();
@@ -36,9 +51,9 @@ export default class LoginScreen extends React.Component {
           <TouchableOpacity>
           <Icon
            onPress={() => this.login()}
-           name={Platform.OS === 'ios'
-            ? 'ios-log-in'
-            : 'md-log-in'}
+           name={Platform.OS === "ios"
+            ? "ios-log-in"
+            : "md-log-in"}
             size={50}
             />
           </TouchableOpacity>
@@ -47,18 +62,3 @@ export default class LoginScreen extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    loginButton: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-    }
-});

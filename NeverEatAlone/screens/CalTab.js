@@ -195,14 +195,14 @@ export default class CalTab extends React.Component {
         "title": "",
         "start": now,
         "end": later,
-      }
+      };
       return {newState};
     });
   }
 
   editEvent(event){
     this.setState((previousState)  => {
-      newState = previousState;
+      var newState = previousState;
       newState.screen = 2;
       return {newState};
     });
@@ -257,8 +257,8 @@ export default class CalTab extends React.Component {
   }
 
   timePickedStart(time){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.editingEvent.start = time;
       return {newState};
     });
@@ -266,8 +266,8 @@ export default class CalTab extends React.Component {
   }
 
   timePickedEnd(time){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.editingEvent.end = time;
       return {newState};
     });
@@ -275,8 +275,8 @@ export default class CalTab extends React.Component {
   }
 
   returnToCalendar(){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.screen = 1;
       return {newState};
     });
@@ -298,43 +298,43 @@ export default class CalTab extends React.Component {
     var y = date.getFullYear().toString();
     var m = (date.getMonth() + 1).toString();
     var d = date.getDate().toString();
-    (d.length == 1) && (d = "0" + d);
-    (m.length == 1) && (m = "0" + m);
+    (d.length === 1) && (d = "0" + d);
+    (m.length === 1) && (m = "0" + m);
     var re = `${y}-${m}-${d}`;
     return re;
   }
 
   getTimeFormat(time){
-    h = time.getHours();
-    m = time.getMinutes();
+    var h = time.getHours();
+    var m = time.getMinutes();
     if(m < 10){
       m = "0" + m;
     }
-    ampm = h > 11 ? "PM" : "AM";
+    var ampm = h > 11 ? "PM" : "AM";
     h %= 12;
-    if(h == 0){
+    if(h === 0){
       h = 12;
     }
-    return `${h}:${m} ${ampm}`
+    return `${h}:${m} ${ampm}`;
   }
 
   renderDay(){
-    events = null;
-    dateString = this.getDateFormat(this.state.day);
+    var events = null;
+    var dateString = this.getDateFormat(this.state.day);
     for(var i = 0; i < this.state.eventDates.length; i++){
       item = this.state.eventDates[i];
-      if(item.date == dateString){
+      if(item.date === dateString){
         events = item.events.map(function(event){
           return (
           <View key={event.key} top={50*event.startTime} onPress={() => this.editEvent(event)}
             height={50*(event.endTime-event.startTime)} style={styles.event}>
             <Text style={styles.eventText}>{event.title}</Text>
-          </View>
-        )});
+          </View>);
+        });
       }
     }
     if(!events){
-      events = <View/>
+      events = <View/>;
     }
     return (
       <View>
@@ -343,35 +343,35 @@ export default class CalTab extends React.Component {
         {events}
       </ScrollView>
       </View>
-    )
+    );
   }
 
   changeTitle(title){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.editingEvent.title = title; 
       return {newState};
     });
   }
   
   showDateTimePicker(){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.isTimePickerVisible = true;
       return {newState};
     });
   }
 
   hideDateTimePicker(){
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.isTimePickerVisible = false;
       return {newState};
     });
   }
     
   changeDay(day){
-    newDay = new Date(day.dateString);
+    var newDay = new Date(day.dateString);
     newDay.setTime( newDay.getTime() + newDay.getTimezoneOffset()*60*1000 );
     this.setState(previousState  => {
       newState = previousState;
@@ -381,7 +381,7 @@ export default class CalTab extends React.Component {
   }
 
   render() {
-    if(this.state.screen == 1){
+    if(this.state.screen === 1){
     return (<View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton}>
@@ -408,13 +408,13 @@ export default class CalTab extends React.Component {
       renderItem={this.renderItem.bind(this)}
       renderEmptyDate={this.renderEmptyDate.bind(this)}
       renderEmptyData = {this.renderDay.bind(this)}
-      onDayPress={(day)=>{this.changeDay(day)}}
+      onDayPress={(day) => {this.changeDay(day)}}
       //renderDay={(day, item) => (<Text>{day ? day.day: "item"}</Text>)}
       />
     </View>
-    </View>)
+    </View>);
     }
-    else if(this.state.screen == 2){
+    else if(this.state.screen === 2){
       return (
       <View style={styles.container}>
         <View style={styles.header}>
@@ -443,7 +443,7 @@ export default class CalTab extends React.Component {
                 mode="time"
                 titleIOS=""
                 isVisible={this.state.isTimePickerVisible}
-                onConfirm={this.state.timePick==1 ? this.timePickedStart.bind(this): this.timePickedEnd.bind(this)}
+                onConfirm={this.state.timePick===1 ? this.timePickedStart.bind(this): this.timePickedEnd.bind(this)}
                 onCancel={this.hideDateTimePicker.bind(this)}
               />
             </TouchableOpacity>
@@ -467,7 +467,7 @@ export default class CalTab extends React.Component {
             </View>
             
         </View>
-      </View>)
+      </View>);
     }
   }
 }

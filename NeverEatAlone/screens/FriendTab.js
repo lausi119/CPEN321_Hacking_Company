@@ -104,7 +104,7 @@ export default class FriendTab extends React.Component {
   }
   parseFriends(data){
     for(var i = 0; i < data.length; i++){
-      friend = data[i];
+      var friend = data[i];
       var n = friend.name.indexOf(" ");
       if(n > 0){
       data[i]["firstName"] = friend.name.substring(0,n);
@@ -154,8 +154,8 @@ export default class FriendTab extends React.Component {
           this.getHashedId(responseData.id);
           
           global.email = responseData.email;
-          this.setState(previousState  => {
-            newState = this.state;
+          this.setState((previousState)  => {
+            var newState = previousState;
             newState.friendsOnline = this.parseFriends(responseData.friends.data);
             return {newState};
           });
@@ -232,7 +232,7 @@ export default class FriendTab extends React.Component {
   render() {
     //CHOOSE TYPE OF VENUE/MESSAGE
     if(this.state.screen === 2){
-      return <View style={styles.container}>
+      return (<View style={styles.container}>
       <View style={styles.header}>
       <Icon 
         onPress={this.reset.bind(this)}
@@ -277,10 +277,10 @@ export default class FriendTab extends React.Component {
           Bars
         </Text></TouchableOpacity>
         </View>
-        </View>;
+      </View>);
     }
     //CHOOSE VENUE
-    else if(this.state.screen == 3){
+    else if(this.state.screen === 3){
       return (
         <View style={styles.container}>
         <View style={styles.header}>
@@ -302,7 +302,7 @@ export default class FriendTab extends React.Component {
         {this.waiting()}
         </View>
         </View>
-      )
+      );
     }
     //FRIEND LIST
     else {
