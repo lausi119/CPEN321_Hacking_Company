@@ -36,7 +36,8 @@ export default class LoginScreen extends React.Component {
       permissions: ["public_profile","email","user_friends"],
     });
     if (type === "success") {
-      global.accessToken = token;
+      global.userInfo = {};
+      global.userInfo['accessToken'] = token;
       global.loggedIn = true;
       global.startRefresh();
       this.props.navigation.navigate("App");

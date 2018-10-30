@@ -133,14 +133,14 @@ export default class FriendTab extends React.Component {
       })
         .then((response) => {return response.json();})
         .then((responseData) => {
-          global.id = responseData.id;
+          global.userInfo['id'] = responseData.id;
         }).catch((error) => {
           alert(error);
         });
   }
   async refreshFriends(first=false){
-    if(global.accessToken){
-      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.accessToken}`, 
+    if(global.userInfo && global.userInfo.accessToken){
+      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.userInfo.accessToken}`, 
       {
         method: "GET",
         headers: {
@@ -150,10 +150,10 @@ export default class FriendTab extends React.Component {
       })
         .then((response) => {return response.json();})
         .then((responseData) => {
-          global.name = responseData.name;
+          global.userInfo.name = responseData.name;
           this.getHashedId(responseData.id);
           
-          global.email = responseData.email;
+          global.userInfo.email = responseData.email;
           this.setState((previousState)  => {
             var newState = previousState;
             newState.friendsOnline = this.parseFriends(responseData.friends.data);
