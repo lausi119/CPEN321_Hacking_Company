@@ -228,14 +228,13 @@ export default class CalTab extends React.Component {
       var found = false;
       var day = this.getDateFormat(this.state.day);
       var newState = previousState;
-      for(var i = 0; i < newState.eventDates.length; i++){
-        var eventDate = newState.eventDates[i];
+      newState.eventDates.forEach((eventDate,index,arr) => {
         if(eventDate.date === day){
           found = true;
           newEvent.key = eventDate.events.length;
-          newState.eventDates[i].events.push(newEvent);
-        }
-      }
+          arr[index].events.push(newEvent);
+        }c
+      });
       if(!found){
         newEvent.key = 0;
         this.state.eventDates.push({
@@ -321,8 +320,7 @@ export default class CalTab extends React.Component {
   renderDay(){
     var events = null;
     var dateString = this.getDateFormat(this.state.day);
-    for(var i = 0; i < this.state.eventDates.length; i++){
-      item = this.state.eventDates[i];
+    this.state.eventDates.forEach((item) => {
       if(item.date === dateString){
         events = item.events.map(function(event){
           return (
@@ -332,7 +330,7 @@ export default class CalTab extends React.Component {
           </View>);
         });
       }
-    }
+    });
     if(!events){
       events = <View/>;
     }
@@ -373,8 +371,8 @@ export default class CalTab extends React.Component {
   changeDay(day){
     var newDay = new Date(day.dateString);
     newDay.setTime( newDay.getTime() + newDay.getTimezoneOffset()*60*1000 );
-    this.setState(previousState  => {
-      newState = previousState;
+    this.setState((previousState)  => {
+      var newState = previousState;
       newState.day = newDay;
       return {newState};
     });
@@ -447,7 +445,7 @@ export default class CalTab extends React.Component {
                 onCancel={this.hideDateTimePicker.bind(this)}
               />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.timeSelect} onPress={(date) => {this.state.timePick=2; this.pickTime()}}>
+            <TouchableOpacity style={styles.timeSelect} onPress={(date) => {this.state.timePick=2; this.pickTime();}}>
               <Text style={styles.timeText}>End   
               </Text>
               <Text style={styles.timeText}>

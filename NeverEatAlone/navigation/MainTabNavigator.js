@@ -6,7 +6,6 @@ import TabBarIcon from "../components/TabBarIcon";
 import CalTab from "../screens/CalTab";
 import FriendTab from "../screens/FriendTab";
 import SettingsTab from "../screens/SettingsTab";
-import LinksTab from "../screens/LinksTab";
 
 
 const FriendsStack = createStackNavigator({
@@ -41,23 +40,6 @@ CalStack.navigationOptions = {
     />
   ),
 };
-const LinksStack = createStackNavigator({
-  Links: LinksTab,
-});
-
-LinksStack.navigationOptions = {
-  tabBarLabel: "Links",
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={
-        Platform.OS === "ios"
-          ? `ios-link${focused ? "" : "-outline"}`
-          : "md-link"
-      }
-    />
-  ),
-};
 
 const SettingsStack = createStackNavigator({
   Settings: SettingsTab,
@@ -80,7 +62,6 @@ const tabNav = createBottomTabNavigator(
   FriendsStack,
   CalStack,
   SettingsStack,
-  LinksStack,
 });
 
 export default tabNav;

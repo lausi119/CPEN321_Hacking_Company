@@ -103,16 +103,15 @@ export default class FriendTab extends React.Component {
     };
   }
   parseFriends(data){
-    for(var i = 0; i < data.length; i++){
-      var friend = data[i];
+    data.forEach((friend,i,arr) => {
       var n = friend.name.indexOf(" ");
       if(n > 0){
-      data[i]["firstName"] = friend.name.substring(0,n);
+        arr[i]["firstName"] = friend.name.substring(0,n);
       }
       else{
-        data[i]["firstName"] = friend.name;
+        arr[i]["firstName"] = friend.name;
       }
-    }
+    });
     return data;
   }
   locationDifference(loc1,loc2){
