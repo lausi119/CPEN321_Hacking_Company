@@ -47,17 +47,17 @@ export default class LoginScreen extends React.Component {
       global.startRefresh();
       this.props.navigation.navigate("App");
     }
-  }
+  } 
 
   render() {
     return (
         <View style={styles.container}>
         <View style={styles.loginButton}>
-           <Text id="logintext">LOGIN</Text>
+           <Text>LOGIN</Text>
           <TouchableOpacity
-           id="login-button">
+           id="login-button"
+           onPress={() => this.login()}>
           <Icon
-           onPress={() => this.login()}
            name={Platform.OS === "ios"
             ? "ios-log-in"
             : "md-log-in"}
