@@ -105,19 +105,6 @@ export default class FriendTab extends React.Component {
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
       Math.abs(loc1.long-loc2.long));
   }
-  parseFriends(data){
-    for(var i = 0; i < data.length; i++){
-      var friend = data[i];
-      var n = friend.name.indexOf(" ");
-      if(n > 0){
-      data[i]["firstName"] = friend.name.substring(0,n);
-      }
-      else{
-        data[i]["firstName"] = friend.name;
-      }
-    }
-    return data;
-  }
   static navigationOptions = {
     header: null,
   };

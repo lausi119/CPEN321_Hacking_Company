@@ -435,7 +435,7 @@ export default class CalTab extends React.Component {
           </View>);
         });
       }
-    }
+    };
     if(!events){
       events = <View/>;
     }

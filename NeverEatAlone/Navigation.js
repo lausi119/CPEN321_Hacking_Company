@@ -1,4 +1,5 @@
-import {createStackNavigator} from 'react-navigation';
+import {createStackNavigator} from "react-navigation";
+import {LoginScreen} from "./screens/LoginScreen.js";
 
 const AppStack = createStackNavigator(
     {
@@ -12,7 +13,6 @@ const AuthStack = createStackNavigator(
 
 export default createSwitchNavigator(
   {
-    AuthLoading: AuthLoadingScreen,
     App: AppStack,
     Auth: AuthStack,
   },
