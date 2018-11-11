@@ -21,6 +21,7 @@
     "jest": "^23.6.0",
     "react": "16.3.1",
     "react-dom": "16.3.0-alpha.1",
+    "react-event-observer": "^0.5.11",
     "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
     "react-native-calendars": "^1.21.0",
     "react-native-fbsdk": "github:facebook/react-native-fbsdk",
@@ -31,7 +32,7 @@
     "react-test-renderer": "16.3.0-alpha.1"
   },
   "devDependencies": {
-    "jest-expo": "30.0.0",
+    "jest-expo": "^30.0.0",
     "react-native-mock": "^0.3.1"
   }
 }

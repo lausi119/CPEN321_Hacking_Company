@@ -5,7 +5,7 @@ import { View,ScrollView, StyleSheet, Text, ListView,
 import Icon from "react-native-vector-icons/Ionicons";
 import { ExpoLinksView } from "@expo/samples";
 import { Platform } from "react-native";
-
+import ReactObserver from 'react-event-observer';
 
 const styles = StyleSheet.create({
   text: {
@@ -85,7 +85,6 @@ export default class FriendTab extends React.Component {
 
   constructor(props){
     super(props);
-    this.friendsOnline = global.userInfo.friends;
     this.state = {
       /*
       1: FriendList
@@ -100,6 +99,14 @@ export default class FriendTab extends React.Component {
       selectedFriend: {
       },
     };
+    var updateFriends = function(data){     
+      this.setState((previousState) => {
+        var newState = previousState;
+        newState.friendsOnline = data;
+        return {newState};
+      });
+    }.bind(this);
+    var listener = global.observer.subscribe('exampleEvent',updateFriends);
   }
   locationDifference(loc1,loc2){
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),

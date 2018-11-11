@@ -3,6 +3,8 @@ import { Platform, StatusBar, StyleSheet, View } from "react-native";
 import { AppLoading, Asset, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 import Geolocation from "react-native-geolocation-service";
+import ReactObserver from 'react-event-observer';
+global.observer = ReactObserver();
 
 const styles = StyleSheet.create({
   container: {
@@ -111,8 +113,7 @@ export default class App extends React.Component {
       })
         .then((response) => {return response.text();})
         .then((responseData) => {
-          alert(responseData);
-          global.userInfo['id'] = responseData.id;
+          //alert(responseData);
         }).catch((error) => {
           alert(error);
       });
@@ -136,6 +137,7 @@ export default class App extends React.Component {
           global.userInfo['email'] = responseData.email;
           var friends = this.parseFriends(responseData.friends.data);
           global.userInfo['friends'] = friends;
+          global.observer.publish('exampleEvent', friends);
           if(first){
             this.addUpdateUser(friends);
           }
@@ -146,15 +148,17 @@ export default class App extends React.Component {
     return 0;
   }
   refreshAll(first=false){
-    this.refreshFriends(first);
+    var refreshFriends = this.refreshFriends.bind(this);
+    refreshFriends(first);
     this.getPosition();
     //this.uploadPosition();
     return 0;
   }
   startRefresh() {
-    this.refreshAll(true);
+    var refreshAll = this.refreshAll.bind(this);
+    refreshAll(true);
     this.state.refreshInterval = 
-      setInterval(this.refreshAll.bind(this),60*1000);
+      setInterval(refreshAll(),60*1000);
   }
   stopRefresh() {
     clearInterval(this.state.refreshInterval);
