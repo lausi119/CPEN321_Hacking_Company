@@ -20,7 +20,7 @@ export default class App extends React.Component {
   getPosition(){
     Geolocation.getCurrentPosition(
       (position) => {
-        global.location = {
+        global.userInfo['location'] = {
           "lat": position.coords.latitude,
           "long": position.coords.longitude,
         };
@@ -31,6 +31,25 @@ export default class App extends React.Component {
       { enableHighAccuracy: true, 
         timeout: 15000, maximumAge: 10000}
     );
+  }
+  getHashedId(myId){
+    fetch("https://nevereatalone321.herokuapp.com/idHash", 
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "id": myId,
+        }),
+      })
+        .then((response) => {return response.json();})
+        .then((responseData) => {
+          global.userInfo['id'] = responseData.id;
+        }).catch((error) => {
+          alert(error);
+        });
   }
   /*uploadPosition(){
     timestamp = Date.now();
@@ -61,12 +80,79 @@ export default class App extends React.Component {
       });
 
   }*/
-  refreshAll(){
+  parseFriends(data){
+    for(var i = 0; i < data.length; i++){
+      var friend = data[i];
+      var n = friend.name.indexOf(" ");
+      if(n > 0){
+      data[i]["firstName"] = friend.name.substring(0,n);
+      }
+      else{
+        data[i]["firstName"] = friend.name;
+      }
+    }
+    return data;
+  }
+  addUpdateUser(friends){
+    var friendIds = friends.map((friend) => {
+      return friend.id;
+    }); 
+    fetch("https://nevereatalone321.herokuapp.com/addUser", 
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "id": global.userInfo.id,
+          "friends": friendIds,
+        }),
+      })
+        .then((response) => {return response.text();})
+        .then((responseData) => {
+          alert(responseData);
+          global.userInfo['id'] = responseData.id;
+        }).catch((error) => {
+          alert(error);
+      });
+      return 0;
+  }
+  refreshFriends(first=false){
+    if(global.userInfo.accessToken){
+      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.userInfo.accessToken}`, 
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {return response.json();})
+        .then((responseData) => {
+          global.userInfo['name'] = responseData.name;
+          //this.getHashedId(responseData.id);
+          
+          global.userInfo['email'] = responseData.email;
+          var friends = this.parseFriends(responseData.friends.data);
+          global.userInfo['friends'] = friends;
+          if(first){
+            this.addUpdateUser(friends);
+          }
+        }).catch((error) => {
+          alert(error);
+        });
+    }
+    return 0;
+  }
+  refreshAll(first=false){
+    this.refreshFriends(first);
     this.getPosition();
     //this.uploadPosition();
+    return 0;
   }
   startRefresh() {
-    this.refreshAll();
+    this.refreshAll(true);
     this.state.refreshInterval = 
       setInterval(this.refreshAll.bind(this),60*1000);
   }

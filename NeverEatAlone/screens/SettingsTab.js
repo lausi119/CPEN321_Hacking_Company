@@ -68,12 +68,8 @@ export default class SettingsTab extends React.Component {
   };
 
   logout(){
-    global.accessToken = null;
-    global.location = null,
+    global.userInfo = null,
     global.stopRefresh();
-    global.name = null;
-    global.id = null;
-    global.email = null;
     global.loggedIn = false;
     this.props.navigation.navigate("Auth");
   }

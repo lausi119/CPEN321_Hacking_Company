@@ -7,24 +7,31 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "eject": "expo eject",
-    "test": "node ./node_modules/jest/bin/jest.js --watchAll"
+    "test": "node_modules/.bin/jest --env=jsdom"
   },
   "jest": {
     "preset": "jest-expo"
   },
   "dependencies": {
     "@expo/samples": "2.1.1",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
+    "enzyme-to-json": "^3.3.1",
     "expo": "^30.0.1",
+    "jest": "^23.6.0",
     "react": "16.3.1",
+    "react-dom": "16.3.0-alpha.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
     "react-native-calendars": "^1.21.0",
     "react-native-fbsdk": "github:facebook/react-native-fbsdk",
     "react-native-geolocation-service": "^1.1.0",
     "react-native-modal-datetime-picker": "^6.0.0",
     "react-native-navigation": "^2.0.2604",
-    "react-navigation": "^2.18.0"
+    "react-navigation": "^2.18.0",
+    "react-test-renderer": "16.3.0-alpha.1"
   },
   "devDependencies": {
-    "jest-expo": "30.0.0"
+    "jest-expo": "30.0.0",
+    "react-native-mock": "^0.3.1"
   }
 }

@@ -30,13 +30,19 @@ export default class LoginScreen extends React.Component {
   };
 
   async login(){
+    global.userInfo = {
+      'accessToken': '',
+      'friends': [],
+    };
     //this.props.navigation.navigate("App");
     const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
       permissions: ["public_profile","email","user_friends"],
     });
     if (type === "success") {
-      global.accessToken = token;
+      global.userInfo = {
+        'accessToken': token,
+      };
       global.loggedIn = true;
       global.startRefresh();
       this.props.navigation.navigate("App");
@@ -47,8 +53,9 @@ export default class LoginScreen extends React.Component {
     return (
         <View style={styles.container}>
         <View style={styles.loginButton}>
-           <Text>LOGIN</Text>
-          <TouchableOpacity>
+           <Text id="logintext">LOGIN</Text>
+          <TouchableOpacity
+           id="login-button">
           <Icon
            onPress={() => this.login()}
            name={Platform.OS === "ios"

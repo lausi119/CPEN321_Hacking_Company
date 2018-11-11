@@ -85,8 +85,7 @@ export default class FriendTab extends React.Component {
 
   constructor(props){
     super(props);
-    this.refreshFriends(true);
-    setInterval(this.refreshFriends.bind(this), 60000);
+    this.friendsOnline = global.userInfo.friends;
     this.state = {
       /*
       1: FriendList
@@ -102,6 +101,10 @@ export default class FriendTab extends React.Component {
       },
     };
   }
+  locationDifference(loc1,loc2){
+    return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
+      Math.abs(loc1.long-loc2.long));
+  }
   parseFriends(data){
     for(var i = 0; i < data.length; i++){
       var friend = data[i];
@@ -114,81 +117,6 @@ export default class FriendTab extends React.Component {
       }
     }
     return data;
-  }
-  locationDifference(loc1,loc2){
-    return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
-      Math.abs(loc1.long-loc2.long));
-  }
-  getHashedId(myId){
-    fetch("https://nevereatalone321.herokuapp.com/idHash", 
-      {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "id": myId,
-        }),
-      })
-        .then((response) => {return response.json();})
-        .then((responseData) => {
-          global.id = responseData.id;
-        }).catch((error) => {
-          alert(error);
-        });
-  }
-  async refreshFriends(first=false){
-    if(global.accessToken){
-      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.accessToken}`, 
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => {return response.json();})
-        .then((responseData) => {
-          global.name = responseData.name;
-          this.getHashedId(responseData.id);
-          
-          global.email = responseData.email;
-          this.setState((previousState)  => {
-            var newState = previousState;
-            newState.friendsOnline = this.parseFriends(responseData.friends.data);
-            return {newState};
-          });
-        }).catch((error) => {
-          alert(error);
-        });
-
-        //Poll server for friends" location
-        /*fetch(`https://nevereatalone321.herokuapp.com/friendslocation`, 
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        })
-          .then(response => {return response.json();})
-          .then((responseData) => {
-            this.setState(previousState  => {
-              newState = this.state;
-              for(var i = 0; i < responseData.friends.length; i++){
-                for(var j = 0; j < newState.friendsOnline.length; j++){
-                  if(newState.friendsOnline[j].id == responseData.friends[i].id){
-                    newState.friendsOnline[j].distance = this.locationDifference(responseData.friends[i].location, global.location);
-                  }
-                }
-              }
-              return {newState};
-            });
-          }).catch((error) => {
-            alert(error);
-          });*/
-    }
   }
   static navigationOptions = {
     header: null,
