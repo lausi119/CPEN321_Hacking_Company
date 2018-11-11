@@ -158,7 +158,7 @@ export default class App extends React.Component {
     var refreshAll = this.refreshAll.bind(this);
     refreshAll(true);
     this.state.refreshInterval = 
-      setInterval(refreshAll(),60*1000);
+      setInterval(refreshAll,60*1000);
   }
   stopRefresh() {
     clearInterval(this.state.refreshInterval);
