@@ -14,26 +14,15 @@ const styles = StyleSheet.create({
 });
 
 export default class App extends React.Component {
+  constructor(props){
+    super(props);
+  }
   state = {
     isLoadingComplete: false,
     hasLocationPermission: false,
     refreshInterval: null,
   };
-  getPosition(){
-    Geolocation.getCurrentPosition(
-      (position) => {
-        global.userInfo['location'] = {
-          "lat": position.coords.latitude,
-          "long": position.coords.longitude,
-        };
-      },
-      (error) => {
-        //console.log(error.message);
-      },
-      { enableHighAccuracy: true, 
-        timeout: 15000, maximumAge: 10000}
-    );
-  }
+  
   getHashedId(myId){
     fetch("https://nevereatalone321.herokuapp.com/idHash", 
       {
@@ -53,35 +42,7 @@ export default class App extends React.Component {
           alert(error);
         });
   }
-  /*uploadPosition(){
-    timestamp = Date.now();
-    fetch(`https://nevereatalone321.herokuapp.com/location`, 
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: {
-        id: global.id,
-        location: global.location,
-      },
-    })
-      .then(response => {return response.json();})
-      .then((responseData) => {
-        global.name = responseData.name;
-        global.id = responseData.id;
-        global.email = responseData.email;
-        this.setState(previousState  => {
-          newState = this.state;
-          newState.friendsOnline = this.parseFriends(responseData.friends.data);
-          return {newState};
-        });
-      }).catch((error) => {
-        alert(error);
-      });
-
-  }*/
+  
   parseFriends(data){
     for(var i = 0; i < data.length; i++){
       var friend = data[i];
@@ -95,10 +56,23 @@ export default class App extends React.Component {
     }
     return data;
   }
-  addUpdateUser(friends){
-    var friendIds = friends.map((friend) => {
+  addUpdateUser(data){
+    var id = data.id;
+    var name = data.name;
+    var email = data.email;
+    var coords = data.location;
+    var friendIds = data.friends.map((friend) => {
       return friend.id;
     }); 
+    var body = JSON.stringify({
+      "user": {
+        "id": id,
+        "name": name,
+        "email": email,
+        "coordinates": coords,
+        "friends": friendIds,
+      }
+    });
     fetch("https://nevereatalone321.herokuapp.com/addUser", 
       {
         method: "POST",
@@ -106,10 +80,7 @@ export default class App extends React.Component {
           "Accept": "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          "id": global.userInfo.id,
-          "friends": friendIds,
-        }),
+        body: body,
       })
         .then((response) => {return response.text();})
         .then((responseData) => {
@@ -119,7 +90,65 @@ export default class App extends React.Component {
       });
       return 0;
   }
-  refreshFriends(first=false){
+  uploadPosition(){
+    if(!global.userInfo.id || !global.userInfo.location || !global.userInfo.location.lat){
+      return;
+    }
+    var body = JSON.stringify({
+      id: global.userInfo.id,
+      location: global.userInfo.location,
+    });
+    alert(body);
+    fetch(`https://nevereatalone321.herokuapp.com/updateLocation`, 
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+    })
+      .then(response => {return response.text();})
+      .then((responseData) => {
+        alert(responseData);
+      }).catch((error) => {
+        alert(error);
+      });
+
+  }
+  getPosition(data,callback){
+    Geolocation.getCurrentPosition(
+      (position) => {
+        if(!global.userInfo){
+          return;
+        }
+        var location = {
+          "lat": position.coords.latitude,
+          "long": position.coords.longitude,
+        };
+        global.userInfo['location'] = location;
+        //uploadPosition(data.id,location);
+        data['location'] = location;
+        callback(data);
+      },
+      (error) => {
+        var location = {
+          "lat": "",
+          "long": ""
+        };
+        data['location'] = location;
+        global.userInfo['location'] = location;
+        callback(data);
+          
+        //console.log(error.message);
+      },
+      { enableHighAccuracy: true, 
+        timeout: 15000, maximumAge: 10000}
+    );
+  }
+  
+  refreshFriends(){
+    
     if(global.userInfo.accessToken){
       fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.userInfo.accessToken}`, 
       {
@@ -131,34 +160,38 @@ export default class App extends React.Component {
       })
         .then((response) => {return response.json();})
         .then((responseData) => {
+          global.userInfo['id'] = responseData.id;
           global.userInfo['name'] = responseData.name;
           //this.getHashedId(responseData.id);
           
           global.userInfo['email'] = responseData.email;
           var friends = this.parseFriends(responseData.friends.data);
           global.userInfo['friends'] = friends;
-          global.observer.publish('exampleEvent', friends);
-          if(first){
-            this.addUpdateUser(friends);
-          }
+          global.observer.publish('updateFriends', friends);
+
+          var data = {
+            id: responseData.id,
+            name: responseData.name,
+            email: responseData.email,
+            friends: friends,
+          };
+          this.getPosition(data,this.addUpdateUser.bind(this));
         }).catch((error) => {
           alert(error);
         });
     }
     return 0;
   }
-  refreshAll(first=false){
+  refreshAll(){
     var refreshFriends = this.refreshFriends.bind(this);
-    refreshFriends(first);
-    this.getPosition();
-    //this.uploadPosition();
+    refreshFriends();
     return 0;
   }
   startRefresh() {
     var refreshAll = this.refreshAll.bind(this);
-    refreshAll(true);
+    refreshAll();
     this.state.refreshInterval = 
-      setInterval(refreshAll,60*1000);
+      setInterval(refreshAll,10*1000);
   }
   stopRefresh() {
     clearInterval(this.state.refreshInterval);
@@ -210,6 +243,5 @@ export default class App extends React.Component {
 
   _handleFinishLoading = () => {
     this.setState({ isLoadingComplete: true });
-    global.location = "null";
   };
 }

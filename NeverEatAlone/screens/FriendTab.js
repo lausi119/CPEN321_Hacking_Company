@@ -99,14 +99,14 @@ export default class FriendTab extends React.Component {
       selectedFriend: {
       },
     };
-    var updateFriends = function(data){     
+    var updateFriends = function(data){
       this.setState((previousState) => {
         var newState = previousState;
         newState.friendsOnline = data;
         return {newState};
       });
     }.bind(this);
-    var listener = global.observer.subscribe('exampleEvent',updateFriends);
+    this.listener = global.observer.subscribe('updateFriends',updateFriends);
   }
   locationDifference(loc1,loc2){
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
@@ -149,6 +149,10 @@ export default class FriendTab extends React.Component {
         color="#000"
       />;
     }
+  }
+
+  componentWillUnmount(){
+    this.listener.unsubscribe();
   }
 
   render() {
