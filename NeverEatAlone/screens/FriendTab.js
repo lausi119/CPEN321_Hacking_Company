@@ -8,6 +8,14 @@ import { Platform } from "react-native";
 import ReactObserver from 'react-event-observer';
 
 const styles = StyleSheet.create({
+  loading:{
+    alignItems: "center",
+    position: "absolute",
+    top: 50,
+    right: 0,
+    left: 0,
+    bottom: 0,
+  },
   text: {
     fontSize: 26,
     color: "#4f603c",
@@ -156,8 +164,16 @@ export default class FriendTab extends React.Component {
   }
 
   render() {
+    if(!global.finishedLoading){
+      return <View style={styles.loading}>
+        <ActivityIndicator
+          color="#000"
+          size="large"
+      />
+      </View>;
+    }
     //CHOOSE TYPE OF VENUE/MESSAGE
-    if(this.state.screen === 2){
+    else if(this.state.screen === 2){
       return (<View style={styles.container}>
       <View style={styles.header}>
       <Icon 

@@ -6,6 +6,7 @@ import TabBarIcon from "../components/TabBarIcon";
 import CalTab from "../screens/CalTab";
 import FriendTab from "../screens/FriendTab";
 import SettingsTab from "../screens/SettingsTab";
+import InvitesTab from "../screens/InvitesTab";
 
 
 const FriendsStack = createStackNavigator({
@@ -17,7 +18,9 @@ FriendsStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === "ios" ? `ios-people${focused ? "" : "-outline"}` : "md-people"}
+      name={Platform.OS === "ios" 
+      ? `ios-people` 
+      : "md-people"}
 
     />
   ),
@@ -34,12 +37,29 @@ CalStack.navigationOptions = {
       focused={focused}
       name={
         Platform.OS === "ios"
-          ? `ios-calendar${focused ? "" : "-outline"}`
+          ? `ios-calendar`
           : "md-calendar"
       }
     />
   ),
 };
+
+const InvitesStack = createStackNavigator({
+  Invites: InvitesTab,
+});
+
+InvitesStack.navigationOptions = {
+  tabBarLabel: "Invites",
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === "ios"
+      ? `ios-notifications` 
+      : "md-notifications"}
+    />
+  ),
+};
+
 
 const SettingsStack = createStackNavigator({
   Settings: SettingsTab,
@@ -50,7 +70,9 @@ SettingsStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name={Platform.OS === "ios" ? `ios-settings${focused ? "" : "-outline"}` : "md-settings"}
+      name={Platform.OS === "ios"
+      ? `ios-settings` 
+      : "md-settings"}
     />
   ),
 };
@@ -61,6 +83,7 @@ const tabNav = createBottomTabNavigator(
   {
   FriendsStack,
   CalStack,
+  InvitesStack,
   SettingsStack,
 });
 

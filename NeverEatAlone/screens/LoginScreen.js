@@ -25,6 +25,10 @@ const styles = StyleSheet.create({
 });
 
 export default class LoginScreen extends React.Component {
+  constructor(props){
+    super(props);
+    this.loggingIn = false;
+  }
   static navigationOptions = {
     header: null,
   };
@@ -34,6 +38,7 @@ export default class LoginScreen extends React.Component {
       'accessToken': '',
       'friends': [],
     };
+    // Uncomment this line only when testing app without login. Comment everything below out if you do
     //this.props.navigation.navigate("App");
     const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
@@ -45,12 +50,23 @@ export default class LoginScreen extends React.Component {
       };
       global.loggedIn = true;
       global.startRefresh();
+      this.loggingIn = true;
       this.props.navigation.navigate("App");
+      this.loggingIn = false;
     }
   } 
 
   render() {
-    return (
+    if(this.loggingIn){
+      return <View style={styles.loading}>
+        <ActivityIndicator
+          color="#000"
+          size="large"
+      />
+      </View>;
+    }
+    else {
+      return (
         <View style={styles.container}>
         <View style={styles.loginButton}>
            <Text>LOGIN</Text>
@@ -66,6 +82,7 @@ export default class LoginScreen extends React.Component {
           </TouchableOpacity>
           </View>
         </View>
-    );
+      );
+    }
   }
 }

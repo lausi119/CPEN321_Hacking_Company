@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
 export default class App extends React.Component {
   constructor(props){
     super(props);
+    global.finishedLoading = false;
   }
   state = {
     isLoadingComplete: false,
@@ -129,6 +130,7 @@ export default class App extends React.Component {
         global.userInfo['location'] = location;
         //uploadPosition(data.id,location);
         data['location'] = location;
+        global.finishedLoading = true;
         callback(data);
       },
       (error) => {
@@ -139,7 +141,7 @@ export default class App extends React.Component {
         data['location'] = location;
         global.userInfo['location'] = location;
         callback(data);
-          
+        global.finishedLoading = true;
         //console.log(error.message);
       },
       { enableHighAccuracy: true, 
