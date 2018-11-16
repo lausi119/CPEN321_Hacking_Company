@@ -152,7 +152,7 @@ export default class App extends React.Component {
   refreshFriends(){
     
     if(global.userInfo.accessToken){
-      fetch(`https://graph.facebook.com/me?fields=id,name,friends&access_token=${global.userInfo.accessToken}`, 
+      fetch(`https://graph.facebook.com/me?fields=id,name,friends,picture&access_token=${global.userInfo.accessToken}`, 
       {
         method: "GET",
         headers: {
@@ -165,7 +165,8 @@ export default class App extends React.Component {
           global.userInfo['id'] = responseData.id;
           global.userInfo['name'] = responseData.name;
           //this.getHashedId(responseData.id);
-          
+          global.userInfo['photoUrl'] = responseData.picture.data.url;
+              
           global.userInfo['email'] = responseData.email;
           var friends = this.parseFriends(responseData.friends.data);
           global.userInfo['friends'] = friends;
@@ -193,7 +194,7 @@ export default class App extends React.Component {
     var refreshAll = this.refreshAll.bind(this);
     refreshAll();
     this.state.refreshInterval = 
-      setInterval(refreshAll,10*1000);
+      setInterval(refreshAll,60*1000);
   }
   stopRefresh() {
     clearInterval(this.state.refreshInterval);

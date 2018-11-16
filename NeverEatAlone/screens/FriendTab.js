@@ -141,7 +141,7 @@ export default class FriendTab extends React.Component {
       return {newState};
     });
   }
-  reset(){
+  resetScreen(){
     this.setState((previousState) => {
       var newState = previousState;
       newState.screen = 1;
@@ -177,7 +177,7 @@ export default class FriendTab extends React.Component {
       return (<View style={styles.container}>
       <View style={styles.header}>
       <Icon 
-        onPress={this.reset.bind(this)}
+        onPress={this.resetScreen.bind(this)}
         style={styles.icon}
         name = {Platform.OS === "ios"
           ? "ios-arrow-dropleft"

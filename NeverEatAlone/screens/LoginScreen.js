@@ -38,7 +38,8 @@ export default class LoginScreen extends React.Component {
       'accessToken': '',
       'friends': [],
     };
-    // Uncomment this line only when testing app without login. Comment everything below out if you do
+    // Uncomment this line only when testing app without login.
+    // Comment everything below out if you do
     //this.props.navigation.navigate("App");
     const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
