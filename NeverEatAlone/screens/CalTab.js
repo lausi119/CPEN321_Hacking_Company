@@ -129,16 +129,21 @@ export default class CalTab extends React.Component {
   constructor(props){
     super(props);
     var now = new Date();
+    var initialScreen = props.screen ? props.screen : 1;
+    
     this.state = {
       /**
        * 1: Month
        * 2: Day
        */
-      screen: 1,
+      screen: initialScreen,
       day: now,
       isTimePickerVisible: false,
-      editingEvent: null,
+      editingEvent: {},
     };
+    if(props.editingEvent){
+      this.state.editingEvent = props.editingEvent;
+    }
     /* Set up timetable GUI */
     var hours = [{
       "key": 0,
@@ -498,6 +503,7 @@ export default class CalTab extends React.Component {
         </TouchableOpacity>
         <Text style={styles.headline}>Calendar</Text>
         <TouchableOpacity style={styles.headerButton} 
+          id="add-event"
           backgroundColor="green"
           onPress={this.createEvent.bind(this)}>
           <Icon name={Platform.OS === "ios"
@@ -559,7 +565,7 @@ export default class CalTab extends React.Component {
                 {this.getTimeFormat(this.state.editingEvent.end)}</Text>
             </TouchableOpacity>
             <View style={{flexDirection:"row",justifyContent: "center"}}>
-            <TouchableOpacity style={styles.editingButton}
+            <TouchableOpacity id="save-event" style={styles.editingButton}
               onPress={this.saveEvent.bind(this)}
             >
               <Text style={{fontSize:25,textAlign:"center"}}>Save</Text>

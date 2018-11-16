@@ -88,7 +88,8 @@ export default class SettingsTab extends React.Component {
           <View style={styles.listItemA}>
           <Text>{global.id}</Text>
           </View>
-          <TouchableOpacity style={styles.listItemB}
+          <TouchableOpacity id="logout-button"
+            style={styles.listItemB}
             onPress={this.logout.bind(this)}>
             <Text style={styles.text}
             >LOGOUT</Text>

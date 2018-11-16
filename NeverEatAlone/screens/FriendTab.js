@@ -107,6 +107,16 @@ export default class FriendTab extends React.Component {
       selectedFriend: {
       },
     };
+    if(props.skipLoading){
+      global.finishedLoading = true;
+    }
+    if(props.friendsOnline){
+      this.state.friendsOnline=props.friendsOnline;
+      this.state.finishedLoading = true;
+    }
+    if(props.friendsBusy){
+      this.state.friendsBusy=props.friendsBusy;
+    }
     var updateFriends = function(data){
       this.setState((previousState) => {
         var newState = previousState;

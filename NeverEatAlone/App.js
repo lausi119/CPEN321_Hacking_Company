@@ -49,7 +49,7 @@ export default class App extends React.Component {
       var friend = data[i];
       var n = friend.name.indexOf(" ");
       if(n > 0){
-      data[i]["firstName"] = friend.name.substring(0,n);
+        data[i]["firstName"] = friend.name.substring(0,n);
       }
       else{
         data[i]["firstName"] = friend.name;
