@@ -276,12 +276,14 @@ export default class CalTab extends React.Component {
       var addEvent = this.addEvent.bind(this);
       addEvent(newEvent,start);
     });
+    var saveCalendar = this.saveCalendar.bind(this);
+    saveCalendar();
   }
 
   /* Actually sets calendar state to add new event, called from multiple places 
      NewEvent should have keys: title, startTime, endTime
   */
-  addEvent(newEvent,day){
+  addEvent(newEvent,day, callback=null){
     this.setState((previousState)  => {
       var found = false;
       var formattedDay = this.getDateFormat(day);
@@ -304,6 +306,9 @@ export default class CalTab extends React.Component {
       newState.screen = 1;
       return {newState};
     });
+    if(callback){
+      (callback.bind(this))();
+    }
   }
 
   /* Sets screen to create event page */
@@ -348,7 +353,7 @@ export default class CalTab extends React.Component {
       endTime: this.timeToFraction(this.state.editingEvent.end),
     };
     var addEvent = this.addEvent.bind(this);
-    addEvent(newEvent,this.state.day);
+    addEvent(newEvent,this.state.day, this.saveCalendar);
   }
   
   static navigationOptions = {
@@ -386,6 +391,29 @@ export default class CalTab extends React.Component {
       newState.screen = 1;
       return {newState};
     });
+  }
+
+  saveCalendar(){
+    var body = {
+      id: global.userInfo.id,
+      eventDates: this.state.eventDates,
+    };
+    fetch(`https://nevereatalone321.herokuapp.com/updateCalendar`, 
+    {
+      method: "PUT",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+    })
+      .then(response => {return response.text();})
+      .then((responseData) => {
+        //alert(responseData);
+      }).catch((error) => {
+        alert(error);
+      });
+
   }
 
   renderItem(item) {

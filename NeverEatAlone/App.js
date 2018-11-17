@@ -43,6 +43,34 @@ export default class App extends React.Component {
           alert(error);
         });
   }
+
+  getFriendsDistance(){
+    fetch("https://nevereatalone321.herokuapp.com/getDistance", 
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "id": global.userInfo.id,
+        }),
+      })
+        .then((response) => {return response.json();})
+        .then((responseData) => {
+          for(var j = 0; j < responseData.distances.length; j++){
+            for(var i = 0; i < global.userInfo.friends.length; i++){
+              var friend = global.userInfo.friends[i];
+              if(friend.id == responseData.distances[j].id){
+                global.userInfo.friends[i].distance = responseData.distances[j].distance;
+                break;
+              }
+            }
+          }
+        }).catch((error) => {
+          alert(error);
+        });
+  }
   
   parseFriends(data){
     for(var i = 0; i < data.length; i++){
