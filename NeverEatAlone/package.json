@@ -20,6 +20,7 @@
     "enzyme-to-json": "^3.3.1",
     "expo": "^30.0.1",
     "jest": "^23.6.0",
+    "npm": "^6.4.1",
     "react": "16.3.1",
     "react-dom": "16.3.0-alpha.1",
     "react-event-observer": "^0.5.11",

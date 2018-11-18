@@ -55,26 +55,35 @@ describe('App snapshot', () => {
   it('navigates to FriendTab', async () => {
 	  var friendsOnline = [
 	  {
-		  "id": "101",
-		  "name": "Friend 1",
+		  "id": "102819017380267",
+		  "name": "Steve Jobs",
 	  },
 	  {
-		  "id": "102",
-		  "name": "Friend 2",
+		  "id": "101596347503975",
+		  "name": "Mark Zuck",
 	  },
 	  ];
 	  var friendsBusy = [
 	  {
-		  "id": "103",
-		  "name": "Friend 3",
-	  },
-	  {
-		  "id": "104",
-		  "name": "Friend 4",
+		  "id": "100030219080466",
+		  "name": "Elon Musk",
 	  },
 	  ];
-	const component = shallow(<FriendTab skipLoading/>);// friendsOnline={friendsOnline} friendsBusy={friendsBusy} />);
-	console.log(component.debug());
+	const component = shallow(<FriendTab/>);
+	friendsOnline.forEach((item) => {
+		expect(component.containsMatchingElement(
+			<TouchableOpacity key={item.id}>
+			<Text>{item.name}</Text>
+			</TouchableOpacity>
+		)).toBeTruthy();
+	});
+	friendsBusy.forEach((item) => {
+		expect(component.containsMatchingElement(
+			<TouchableOpacity key={item.id}>
+			<Text>{item.name}</Text>
+			</TouchableOpacity>
+		)).toBeTruthy();
+	});
     expect(component).toMatchSnapshot();
   });
   
@@ -94,6 +103,11 @@ describe('App snapshot', () => {
             size={30}
           />
         </TouchableOpacity>)).toBeTruthy();
+		
+  });
+  
+  it('creates a Calendar event', async () => {
+	const screen1 = shallow(<CalTab />);
 	screen1.find("#add-event").simulate("click");
 	
 	var now = new Date();
