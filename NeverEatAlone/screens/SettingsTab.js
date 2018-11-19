@@ -4,9 +4,10 @@ import{
   ScrollView,StyleSheet,
   Text,TouchableOpacity,
   View, Button,
-  Platform,
+  Platform, Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { API } from 'react-native-dotenv';
 
 const styles = StyleSheet.create({
   icon: {
@@ -16,6 +17,8 @@ const styles = StyleSheet.create({
   text: {
     paddingLeft: 10,
     paddingTop: 10,
+    fontSize: 25,
+    color: "#000",
   },
   container: {
     flex: 1,
@@ -37,24 +40,15 @@ const styles = StyleSheet.create({
     padding: 10,
     fontWeight: "bold"
   },
-  listItemA:{
+  listItem:{
     flex: 1,
     flexDirection: "row",
-    borderTopWidth: 1,
-    borderColor: "black",
-    backgroundColor: "#cccccc",
-    height: 35,
+    borderBottomWidth: 1,
+    borderColor: "#356DA1",
+    backgroundColor: "#fff",
+    height: 55,
     paddingLeft: 10
   },
-  listItemB:{
-    flex: 1,
-    flexDirection: "row",
-    borderTopWidth: 1,
-    borderColor: "black",
-    backgroundColor: "#eeeeee",
-    height: 35,
-    paddingLeft: 10
-  }
 });
 
 export default class SettingsTab extends React.Component {
@@ -75,6 +69,37 @@ export default class SettingsTab extends React.Component {
     this.props.navigation.navigate("Auth");
   }
 
+  deleteAccount(){
+    var del = () => {
+      fetch(API + "deleteAccount", {
+        method: "DELETE",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "id": global.userInfo.id,
+        }),
+      }
+      ).then((response) => {
+        alert(response.text());
+        (this.logout.bind(this))();
+      })
+      .catch((err) => {
+        alert("Account could not be deleted: " + err);
+      });
+    };
+    Alert.alert(
+      title='Delete your account from NeverEatAlone?',
+      message="You can always log back in to reinstate your account",
+      buttons=[
+          {text: 'Cancel', style: 'cancel'},
+          {text: 'OK', onPress: del.bind(this)},
+      ],
+      options={cancelable: false}
+  );
+  }
+
   render() {
     /* Go ahead and delete ExpoConfigView and replace it with your
      * content, we just wanted to give you a quick view of your config */
@@ -85,19 +110,27 @@ export default class SettingsTab extends React.Component {
       </View>
       <View style={styles.container}>
         <ScrollView>
-          <View style={styles.listItemA}>
-          <Text>{global.id}</Text>
-          </View>
           <TouchableOpacity id="logout-button"
-            style={styles.listItemB}
+            style={styles.listItem}
             onPress={this.logout.bind(this)}>
             <Text style={styles.text}
-            >LOGOUT</Text>
+            >Logout</Text>
             <Icon style={styles.icon}
             name={Platform.OS === "ios"
             ? "ios-log-out"
             : "md-log-out"}
-              size={25}
+              size={35}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.listItem}
+            onPress={this.deleteAccount.bind(this)}>
+          <Text style={styles.text} color="red">Delete account</Text>
+          <Icon style={styles.icon}
+            color="red"
+            name={Platform.OS === "ios"
+            ? "ios-trash"
+            : "md-trash"}
+              size={35}
             />
           </TouchableOpacity>
         </ScrollView>

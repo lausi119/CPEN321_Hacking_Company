@@ -1,6 +1,6 @@
 import React from "react";
 import{
-  Image,
+  Alert,
   ScrollView,StyleSheet,
   Text,TouchableOpacity,
   View, Button,
@@ -13,9 +13,38 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginTop: 5,
   },
+  infoBox: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      borderBottomWidth: 2,
+      borderColor: "#356DA1"
+  },
+  rApostrophe: {
+    paddingLeft: 15,
+    fontSize: 40,
+    color: "#013567",
+    textAlign: "right"
+  },
+  lApostrophe: {
+    paddingLeft: 15,
+    fontSize: 40,
+    color: "#013567",
+    textAlign: "left"
+  },
   text: {
-    paddingLeft: 10,
-    paddingTop: 10,
+    padding: 10,
+    fontSize: 20,
+  },
+  messageContainer: {
+      borderRadius: 20,
+      borderWidth: 5,
+      borderColor: "#013567",
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  message: {
+    padding: 15,
+    fontSize: 15,
   },
   container: {
     flex: 1,
@@ -71,9 +100,11 @@ const styles = StyleSheet.create({
     borderColor: "#9B0000",
   },
   icon: {
-    padding: 4,
+    paddingTop: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     fontSize: 36,
-    color: "#4f603c",
+    color: "#34526E",
   },
 });
 
@@ -89,16 +120,17 @@ export default class InvitesTab extends React.Component {
         screen: 1,
         selectedInvite: {},
         invites: [
-            /*{
+            {
                 key: 0,
                 friendId: "100",
                 friendName: "Harsh Arora",
                 venueName: "McDonalds",
                 coords: {
-                    "lat": 49.274540,
-                    "long": -123.250165
+                    "lat": 49.268429,
+                    "long": -123.168485
                 },
-                "message": "Really long messageReally long messageReally long messageReally long messageReally long messageReally long messageReally long messageReally long message"
+                "message": `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. `
             },
             {
                 key: 1,
@@ -110,7 +142,7 @@ export default class InvitesTab extends React.Component {
                 friendName: "Laurenz Schmielau",
                 venueName: "Pacific Poke",
                 "message": "   "
-            }*/
+            }
         ],
         finishedLoading: true,
       };
@@ -165,6 +197,26 @@ export default class InvitesTab extends React.Component {
     });
   }
 
+  clearAll(){
+    var clear = () => {
+        this.setState((previousState) => {
+            var newState = previousState;
+            newState.invites = [];
+            newState.selectedInvite = {};
+            return {newState};
+        });
+    };
+    Alert.alert(
+        title='Clear all invites?',
+        message="",
+        buttons=[
+            {text: 'Cancel', style: 'cancel'},
+            {text: 'OK', onPress: clear.bind(this)},
+        ],
+        options={cancelable: false}
+    );
+  }
+
   accept(){
     for(var i = 0; i < this.state.invites.length; i++){
         if(this.state.selectedInvite.key == this.state.invites[i].key){
@@ -183,6 +235,23 @@ export default class InvitesTab extends React.Component {
         }
     }
     this.resetScreen();
+  }
+
+  renderMessage(msg){
+    if(msg.trim().length != 0){
+        return <View style={styles.infoBox}>
+                    <View>
+                        <Text style={styles.lApostrophe}>&ldquo;</Text>
+                        <View style={styles.messageContainer}>
+                            <Text style={styles.message}>{msg}</Text>
+                        </View>
+                        <Text style={styles.rApostrophe}>&rdquo;</Text>
+                    </View>
+                </View>;
+    }
+    else{
+        return <View/>;
+    }
   }
 
   renderInvite(item){
@@ -214,8 +283,17 @@ export default class InvitesTab extends React.Component {
     if(this.state.screen == 1){
         return <View style={styles.container}>
             <View style={styles.header}>
+                <Text>{"\t"}</Text>
                 <Text style={styles.headline}
                 >Invites</Text>
+                <TouchableOpacity
+                    style={{flexDirection:"row"}}
+                    onPress={this.clearAll.bind(this)}>
+                    <Icon style={styles.icon}
+                        name={Platform.OS === "ios"
+                    ? "ios-trash"
+                    : "md-trash"}/>
+                </TouchableOpacity>
             </View>
             <View style={styles.container}>
                 <ScrollView>
@@ -239,10 +317,18 @@ export default class InvitesTab extends React.Component {
                     : "md-arrow-dropleft"}
                 />
                 <Text style={styles.headline}>{this.state.selectedInvite.friendName}</Text>
+                <Text>{"\t\t"}</Text>
             </View>
             <View style={styles.container}>
-                <Text>{this.state.selectedInvite.venueName}</Text>
-                <Text>{this.state.selectedInvite.message}</Text>
+                <View style={styles.infoBox}/>
+                <View style={styles.infoBox}>
+                    <View>
+                        <Text style={{padding: 8,fontSize:12}}>wants to meet at</Text>
+                        <Text style={styles.text}>{this.state.selectedInvite.venueName}</Text>
+                    </View>
+                    <Text style={styles.text}>{this.truncDistance(this.locationDifference(global.userInfo.location, this.state.selectedInvite.coords))}</Text>
+                </View>
+                {this.renderMessage(this.state.selectedInvite.message)}
                 <View style={{margin:20,flexDirection:"row",justifyContent:"space-around"}}>
                 <TouchableOpacity onPress={this.accept.bind(this)} style={styles.acceptButton}>
                     <Text style={{padding:10,color:"#035C76"}}>Accept</Text>

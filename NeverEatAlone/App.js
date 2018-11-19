@@ -5,6 +5,7 @@ import AppNavigator from "./navigation/AppNavigator";
 import Geolocation from "react-native-geolocation-service";
 import ReactObserver from 'react-event-observer';
 global.observer = ReactObserver();
+import { API } from 'react-native-dotenv';
 
 const styles = StyleSheet.create({
   container: {
@@ -25,7 +26,7 @@ export default class App extends React.Component {
   };
   
   getHashedId(myId){
-    fetch("https://nevereatalone321.herokuapp.com/idHash", 
+    fetch(API + "idHash", 
       {
         method: "POST",
         headers: {
@@ -45,7 +46,7 @@ export default class App extends React.Component {
   }
 
   getFriendsDistance(){
-    fetch("https://nevereatalone321.herokuapp.com/getDistance", 
+    fetch(API + "getDistance", 
       {
         method: "POST",
         headers: {
@@ -102,7 +103,7 @@ export default class App extends React.Component {
         "friends": friendIds,
       }
     });
-    fetch("https://nevereatalone321.herokuapp.com/addUser", 
+    fetch(API + "addUser", 
       {
         method: "POST",
         headers: {
@@ -128,7 +129,7 @@ export default class App extends React.Component {
       location: global.userInfo.location,
     });
     alert(body);
-    fetch(`https://nevereatalone321.herokuapp.com/updateLocation`, 
+    fetch(API + "updateLocation", 
     {
       method: "PUT",
       headers: {
@@ -158,7 +159,7 @@ export default class App extends React.Component {
         global.userInfo['location'] = location;
         //uploadPosition(data.id,location);
         data['location'] = location;
-        global.finishedLoading = true;
+        global.observer.publish('loading', true);
         callback(data);
       },
       (error) => {
@@ -173,7 +174,7 @@ export default class App extends React.Component {
         //console.log(error.message);
       },
       { enableHighAccuracy: true, 
-        timeout: 15000, maximumAge: 10000}
+        timeout: 1500, maximumAge: 1000}
     );
   }
   

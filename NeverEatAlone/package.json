@@ -26,6 +26,7 @@
     "react-event-observer": "^0.5.11",
     "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
     "react-native-calendars": "^1.21.0",
+    "react-native-dotenv": "^0.2.0",
     "react-native-fbsdk": "github:facebook/react-native-fbsdk",
     "react-native-geolocation-service": "^1.1.0",
     "react-native-modal-datetime-picker": "^6.0.0",

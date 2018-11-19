@@ -120,7 +120,7 @@ export default class FriendTab extends React.Component {
         return {newState};
       });
     }.bind(this);
-    this.listener = global.observer.subscribe('updateFriends',updateFriends);
+    this.listenerFriends = global.observer.subscribe('updateFriends',updateFriends);
   }
   locationDifference(loc1,loc2){
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
@@ -166,20 +166,12 @@ export default class FriendTab extends React.Component {
   }
 
   componentWillUnmount(){
-    this.listener.unsubscribe();
+    this.listenerFriends.unsubscribe();
   }
 
   render() {
-    if(!global.finishedLoading){
-      return <View style={styles.loading}>
-        <ActivityIndicator
-          color="#000"
-          size="large"
-      />
-      </View>;
-    }
     //CHOOSE TYPE OF VENUE/MESSAGE
-    else if(this.state.screen === 2){
+    if(this.state.screen === 2){
       return (<View style={styles.container}>
       <View style={styles.header}>
       <Icon 

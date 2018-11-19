@@ -7,10 +7,10 @@ import {
   TextInput,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
-import Touchable from "react-native-platform-touchable";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "react-native-modal-datetime-picker";
 import Expo from 'expo';
+import { GOOGLE_API_URL} from 'react-native-dotenv';
 
 const styles = StyleSheet.create({
   editingButton: {
@@ -157,7 +157,7 @@ export default class CalTab extends React.Component {
       hours[i+1] = {
         key: i+1,
       };
-      hours[i+1].time = i > 11
+      hours[i+1].time = i >= 11 
       ? i%12+1 + " pm"
       : i%12+1 + " am";
     }
@@ -187,6 +187,7 @@ export default class CalTab extends React.Component {
        </View>
       );
     });
+
   }
   
   async getUserInfo(accessToken) {
@@ -222,7 +223,7 @@ export default class CalTab extends React.Component {
   async syncCalendar(){
     var token;
     if(!global.userInfo.googleToken){
-      var result = await this.signInWithGoogleAsync("616638416211-s8na2vmbt3gq6tngrvfk0gle9d26mqad.apps.googleusercontent.com");
+      var result = await this.signInWithGoogleAsync(GOOGLE_API_URL);
       if(result.cancelled){
         return;
       }
@@ -274,16 +275,27 @@ export default class CalTab extends React.Component {
         endTime: this.timeToFraction(end),
       };
       var addEvent = this.addEvent.bind(this);
-      addEvent(newEvent,start);
+      if(event.recurrence){
+        if(event.recurrence[0].includes("RRULE:FREQ=WEEKLY")){
+          //alert(JSON.stringify(event));
+          for(var i = 0; i < 25; i++){
+            addEvent(newEvent, start);
+            start.setDate(start.getDate()+7);
+          }
+        }
+      }
+      else{
+        addEvent(newEvent,start);
+      }
     });
     var saveCalendar = this.saveCalendar.bind(this);
-    saveCalendar();
+    //saveCalendar();
   }
 
   /* Actually sets calendar state to add new event, called from multiple places 
      NewEvent should have keys: title, startTime, endTime
   */
-  addEvent(newEvent,day, callback=null){
+  addEvent(newEvent, day, callback=null){
     this.setState((previousState)  => {
       var found = false;
       var formattedDay = this.getDateFormat(day);
@@ -299,7 +311,7 @@ export default class CalTab extends React.Component {
       if(!found){
         newEvent.key = 0;
         this.state.eventDates.push({
-          date: day,
+          date: formattedDay,
           events: [newEvent],
         });
       }
@@ -405,7 +417,7 @@ export default class CalTab extends React.Component {
         "Accept": "application/json",
         "Content-Type": "application/json",
       },
-      body: body,
+      body: JSON.stringify(body),
     })
       .then(response => {return response.text();})
       .then((responseData) => {
@@ -474,7 +486,7 @@ export default class CalTab extends React.Component {
     }
     return (
       <View>
-      <ScrollView style={styles.container}>
+      <ScrollView ref='_scrollView' style={styles.container}>
         {this.state.hours}
         {events}
       </ScrollView>
