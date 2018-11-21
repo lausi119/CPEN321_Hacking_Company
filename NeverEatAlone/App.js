@@ -25,26 +25,6 @@ export default class App extends React.Component {
     refreshInterval: null,
   };
   
-  getHashedId(myId){
-    fetch(API + "idHash", 
-      {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "id": myId,
-        }),
-      })
-        .then((response) => {return response.json();})
-        .then((responseData) => {
-          global.userInfo['id'] = responseData.id;
-        }).catch((error) => {
-          alert(error);
-        });
-  }
-
   getFriendsDistance(){
     fetch(API + "getDistance", 
       {
@@ -83,6 +63,7 @@ export default class App extends React.Component {
       else{
         data[i]["firstName"] = friend.name;
       }
+      data[i]["distance"] = Math.random()*10;
     }
     return data;
   }

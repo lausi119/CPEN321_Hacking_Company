@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import LoginScreen from '../screens/LoginScreen';
 import FriendTab from '../screens/FriendTab';
 import CalTab from '../screens/CalTab';
+import InvitesTab from '../screens/InvitesTab';
 import MainTabNavigator from '../navigation/MainTabNavigator';
 import SettingsTab from '../screens/SettingsTab';
 import renderer from 'react-test-renderer';
@@ -20,10 +21,38 @@ import NavigationTestUtils from 'react-navigation/NavigationTestUtils';
 import {shallow, mount, render} from 'enzyme';
 import * as enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-//import Adapter from 'enzyme-adapter-react-15';
-//import Adapter from 'enzyme-adapter-react-16.3';
 
 enzyme.configure( {adapter: new Adapter() } );
+
+function simulateClick(component, index){
+	var parent = component.parent().dive();
+	var cmp;
+	if(index){
+		console.log('index', index);
+		cmp = parent.children().at(index);
+	}
+	else{
+		cmp = parent.find('#' + component.prop('id'));
+	}
+	try{
+		/*console.log('success-start');
+		console.log(component.debug());
+		
+		console.log(parent.debug());
+		console.log(cmp.debug());
+		console.log(component.prop('id'));
+		console.log('success-end');*/
+	}catch(err){
+		(cmp.prop('onPress'))();
+		console.log('fail-start');
+		console.log(component.debug());
+		
+		console.log(parent.children());
+		console.log(cmp.debug());
+		console.log(component.prop('id'));
+		console.log('fail-end');
+	}
+}
 
 describe('App snapshot', () => {
   jest.useFakeTimers();
@@ -45,9 +74,8 @@ describe('App snapshot', () => {
   
   it('logs in with test user', async () => {
     var component = shallow(<LoginScreen/>);
-	var btn = component.find('#login-button');
+	simulateClick(component.find("#login-button"));
 	
-	btn.simulate('click');
     const landing = shallow(<FriendTab/>);
     expect(component).toMatchSnapshot();
   });
@@ -108,7 +136,8 @@ describe('App snapshot', () => {
   
   it('creates a Calendar event', async () => {
 	const screen1 = shallow(<CalTab />);
-	screen1.find("#add-event").simulate("click");
+	simulateClick(screen1.find("#sync-cal"));
+	simulateClick(screen1.find("#add-event"));
 	
 	var now = new Date();
 	var later = new Date(now);
@@ -120,38 +149,51 @@ describe('App snapshot', () => {
 		"start": now,
 		"end": later,
 	};
+	
 	const screen2 = shallow(<CalTab screen={2} editingEvent={editingEvent}/>);
-	expect(screen2.containsMatchingElement(
-		<TouchableOpacity>
-		  <Icon name="ios-arrow-dropleft" size={30}/>
-		</TouchableOpacity>)).toBeTruthy();
 	
-	screen2.find("#save-event").simulate("click");
-	
-	expect(screen1.containsMatchingElement(
+	simulateClick(screen2.find("#time-pick-start"));
+	simulateClick(screen2.find("#time-pick-end"));
+	simulateClick(screen2.find("#save-event"));
+  });
+  
+  it('navigates to InvitesTab', async () => {
+	var component = shallow(<InvitesTab />);
+	expect(component.containsMatchingElement(
         <TouchableOpacity>
-          <Icon name="ios-cloud-upload"
-            size={30}
+          <Icon name="ios-trash"
           />
         </TouchableOpacity>)).toBeTruthy();
-	expect(screen1.containsMatchingElement(
-        <Agenda/>)).toBeTruthy();
-	expect(screen1.containsMatchingElement(
-        <TouchableOpacity>
-          <Icon name="ios-add-circle-outline"
-            size={30}
-          />
-        </TouchableOpacity>)).toBeTruthy();
-	
-	});
+	var invites = component.find("#invite-list");
+	var ad = true;
+	for(var i = 0; i < invites.children().length; i++){
+		component = shallow(<InvitesTab screen={2}/>);
+		simulateClick((invites.children().at(i)), i);
+		if(ad){
+			simulateClick(component.find("#decline"));
+		}
+		else{
+			simulateClick(component.find("#accept"));
+		}
+		ad = !ad;
+	}
+  });
 	
   it('navigates to SettingsTab and logs out', async () => {
-	const component = shallow(<SettingsTab />);
-    expect(component).toMatchSnapshot();
+	var settings = shallow(<SettingsTab />);
 	
-	component.find("#logout-button").simulate("click");
+	simulateClick(settings.find("#logout-button"));
 	
 	const login = shallow(<LoginScreen />);
+	
     expect(login).toMatchSnapshot();
+  });
+  it('logs in, navigates to SettingsTab, deletes account', async () => {
+	var login = shallow(<LoginScreen />);
+	simulateClick(login.find("#login-button"));
+	const component = shallow(<SettingsTab />);
+	expect(component).toMatchSnapshot();
+	
+	simulateClick(component.find('#delete-button'));
   });
 });

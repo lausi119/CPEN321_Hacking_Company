@@ -40,8 +40,8 @@ export default class LoginScreen extends React.Component {
     };
     // Uncomment this line only when testing app without login.
     // Comment everything below out if you do
-    //this.props.navigation.navigate("App");
-    const { type, token } = await 
+    this.props.navigation.navigate("App");
+    /*const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
       permissions: ["public_profile","email","user_friends"],
     });
@@ -54,7 +54,7 @@ export default class LoginScreen extends React.Component {
       this.loggingIn = true;
       this.props.navigation.navigate("App");
       this.loggingIn = false;
-    }
+    }*/
   } 
 
   render() {
@@ -73,7 +73,7 @@ export default class LoginScreen extends React.Component {
            <Text>LOGIN</Text>
           <TouchableOpacity
            id="login-button"
-           onPress={() => this.login()}>
+           onPress={this.login}>
           <Icon
            name={Platform.OS === "ios"
             ? "ios-log-in"

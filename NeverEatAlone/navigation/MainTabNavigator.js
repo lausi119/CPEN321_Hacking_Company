@@ -17,6 +17,7 @@ FriendsStack.navigationOptions = {
   tabBarLabel: "Friends",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
+    id="friend-tab-button"
       focused={focused}
       name={Platform.OS === "ios" 
       ? `ios-people` 
@@ -34,6 +35,7 @@ CalStack.navigationOptions = {
   tabBarLabel: "Calendar",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
+      id="cal-tab-button"
       focused={focused}
       name={
         Platform.OS === "ios"
@@ -52,6 +54,7 @@ InvitesStack.navigationOptions = {
   tabBarLabel: "Invites",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
+      id="invites-tab-button"
       focused={focused}
       name={Platform.OS === "ios"
       ? `ios-notifications` 
@@ -69,6 +72,7 @@ SettingsStack.navigationOptions = {
   tabBarLabel: "Settings",
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
+      id="settings-tab-button"
       focused={focused}
       name={Platform.OS === "ios"
       ? `ios-settings` 

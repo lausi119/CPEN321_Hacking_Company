@@ -146,6 +146,9 @@ export default class InvitesTab extends React.Component {
         ],
         finishedLoading: true,
       };
+      if(props.screen){
+          this.state.screen = props.screen;
+      }
   }
   static navigationOptions = {
     header: null,
@@ -161,7 +164,10 @@ export default class InvitesTab extends React.Component {
     return '"' + text + '"';
   }
   truncDistance(distance){
-      if(distance < 1){
+      if(distance < 0){
+          return "";
+      }
+      else if(distance < 1){
           return "less than 1 km";
       }
       else{
@@ -169,9 +175,13 @@ export default class InvitesTab extends React.Component {
           return `${distance} km`;
       }
   }
-  locationDifference(loc1,loc2){
+  locationDifference(loc2){
+    if(!global.userInfo){
+        return -1;
+    }
+    var loc1 = global.userInfo.location;
     if(!loc1){
-        return 50;
+        return -1;
     }
     var x = Math.abs(loc1.lat-loc2.lat);
     var y = Math.abs(loc1.long-loc2.long);
@@ -238,7 +248,7 @@ export default class InvitesTab extends React.Component {
   }
 
   renderMessage(msg){
-    if(msg.trim().length != 0){
+    if(!msg || msg.trim().length != 0){
         return <View style={styles.infoBox}>
                     <View>
                         <Text style={styles.lApostrophe}>&ldquo;</Text>
@@ -269,7 +279,7 @@ export default class InvitesTab extends React.Component {
                 </View>
                 <View style={styles.row}>
                     <Text style={{color:"#006C8D"}}>{item.venueName}</Text>
-                    <Text style={{color:"#006C8D",paddingRight:15}}>{this.truncDistance(this.locationDifference(global.userInfo.location, item.coords))}</Text>
+                    <Text style={{color:"#006C8D",paddingRight:15}}>{this.truncDistance(this.locationDifference(item.coords))}</Text>
                 </View>
                 <View>
                     <Text style={{color:"#006C8D",paddingBottom:5}}>{this.truncText(item.message)}</Text>
@@ -287,6 +297,7 @@ export default class InvitesTab extends React.Component {
                 <Text style={styles.headline}
                 >Invites</Text>
                 <TouchableOpacity
+                    id="clear-all"
                     style={{flexDirection:"row"}}
                     onPress={this.clearAll.bind(this)}>
                     <Icon style={styles.icon}
@@ -296,11 +307,11 @@ export default class InvitesTab extends React.Component {
                 </TouchableOpacity>
             </View>
             <View style={styles.container}>
-                <ScrollView>
+                <ScrollView id="invite-list">
                 {
                     this.state.invites.map((item,index) => (
-                    this.renderInvite(item)
-                ))
+                        this.renderInvite(item)
+                    ))
                 }
                 </ScrollView>
             </View>
@@ -309,7 +320,7 @@ export default class InvitesTab extends React.Component {
     else{
         return <View style={styles.container}>
             <View style={styles.header}>
-                <Icon 
+                <Icon id="back-button"
                     onPress={this.resetScreen.bind(this)}
                     style={styles.icon}
                     name = {Platform.OS === "ios"
@@ -326,14 +337,14 @@ export default class InvitesTab extends React.Component {
                         <Text style={{padding: 8,fontSize:12}}>wants to meet at</Text>
                         <Text style={styles.text}>{this.state.selectedInvite.venueName}</Text>
                     </View>
-                    <Text style={styles.text}>{this.truncDistance(this.locationDifference(global.userInfo.location, this.state.selectedInvite.coords))}</Text>
+                    <Text style={styles.text}>{this.truncDistance(this.locationDifference(this.state.selectedInvite.coords))}</Text>
                 </View>
                 {this.renderMessage(this.state.selectedInvite.message)}
                 <View style={{margin:20,flexDirection:"row",justifyContent:"space-around"}}>
-                <TouchableOpacity onPress={this.accept.bind(this)} style={styles.acceptButton}>
+                <TouchableOpacity id="accept" onPress={this.accept.bind(this)} style={styles.acceptButton}>
                     <Text style={{padding:10,color:"#035C76"}}>Accept</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={this.decline.bind(this)} style={styles.declineButton}>
+                <TouchableOpacity id="decline" onPress={this.decline.bind(this)} style={styles.declineButton}>
                     <Text style={{padding:10,color:"#9B0000"}}>Decline</Text>
                 </TouchableOpacity>
                 </View>

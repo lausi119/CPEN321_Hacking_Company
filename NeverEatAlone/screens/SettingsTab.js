@@ -114,7 +114,7 @@ export default class SettingsTab extends React.Component {
             style={styles.listItem}
             onPress={this.logout.bind(this)}>
             <Text style={styles.text}
-            >Logout</Text>
+            >Logout</Text> 
             <Icon style={styles.icon}
             name={Platform.OS === "ios"
             ? "ios-log-out"
@@ -122,7 +122,7 @@ export default class SettingsTab extends React.Component {
               size={35}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.listItem}
+          <TouchableOpacity id="delete-button" style={styles.listItem}
             onPress={this.deleteAccount.bind(this)}>
           <Text style={styles.text} color="red">Delete account</Text>
           <Icon style={styles.icon}

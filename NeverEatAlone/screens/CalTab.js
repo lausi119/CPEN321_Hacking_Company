@@ -189,14 +189,6 @@ export default class CalTab extends React.Component {
     });
 
   }
-  
-  async getUserInfo(accessToken) {
-    let userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-      headers: { Authorization: `Bearer ${accessToken}`},
-    });
-  
-    return userInfoResponse;
-  }
   async signInWithGoogleAsync(clientId) {
     try {
       const result = await Expo.Google.logInAsync({
@@ -532,7 +524,7 @@ export default class CalTab extends React.Component {
     if(this.state.screen === 1){
     return (<View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
+        <TouchableOpacity id="sync-cal"
          onPress={this.syncCalendar.bind(this)}
          style={styles.headerButton}>
           <Icon name={Platform.OS === "ios"
@@ -581,11 +573,11 @@ export default class CalTab extends React.Component {
           <Text style={styles.headerButton}></Text>
         </View>
         <View style={styles.container}>
-          <TextInput style={styles.textBox} placeholder="Title"
+          <TextInput id="title-edit" style={styles.textBox} placeholder="Title"
             onChangeText={(text) => this.changeTitle(text)}
             value={this.state.editingEvent.title}/>
 
-            <TouchableOpacity style={styles.timeSelect} onPress={(date) => {this.state.timePick=1;this.pickTime();}}>
+            <TouchableOpacity id="time-pick-start" style={styles.timeSelect} onPress={(date) => {this.state.timePick=1;this.pickTime();}}>
               <Text style={styles.timeText}>Start   
               </Text>
               <Text style={styles.timeText}>
@@ -598,7 +590,7 @@ export default class CalTab extends React.Component {
                 onCancel={this.hideDateTimePicker.bind(this)}
               />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.timeSelect} onPress={(date) => {this.state.timePick=2; this.pickTime();}}>
+            <TouchableOpacity id="time-pick-end" style={styles.timeSelect} onPress={(date) => {this.state.timePick=2; this.pickTime();}}>
               <Text style={styles.timeText}>End   
               </Text>
               <Text style={styles.timeText}>
