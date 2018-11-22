@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    Image,
+    Image, ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
@@ -17,11 +17,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loginButton: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    flexDirection: "column",
-  }
+    flexDirection: "row",
+    backgroundColor: "#3b5999",
+    borderRadius: 4,
+  },
 });
 
 export default class LoginScreen extends React.Component {
@@ -40,8 +41,8 @@ export default class LoginScreen extends React.Component {
     };
     // Uncomment this line only when testing app without login.
     // Comment everything below out if you do
-    this.props.navigation.navigate("App");
-    /*const { type, token } = await 
+    //this.props.navigation.navigate("App");
+    const { type, token } = await 
     Expo.Facebook.logInWithReadPermissionsAsync("305115093422180", {
       permissions: ["public_profile","email","user_friends"],
     });
@@ -54,12 +55,12 @@ export default class LoginScreen extends React.Component {
       this.loggingIn = true;
       this.props.navigation.navigate("App");
       this.loggingIn = false;
-    }*/
+    }
   } 
 
   render() {
     if(this.loggingIn){
-      return <View style={styles.loading}>
+      return <View>
         <ActivityIndicator
           color="#000"
           size="large"
@@ -69,19 +70,14 @@ export default class LoginScreen extends React.Component {
     else {
       return (
         <View style={styles.container}>
-        <View style={styles.loginButton}>
-           <Text>LOGIN</Text>
-          <TouchableOpacity
-           id="login-button"
-           onPress={this.login}>
-          <Icon
-           name={Platform.OS === "ios"
-            ? "ios-log-in"
-            : "md-log-in"}
-            size={50}
-            />
-          </TouchableOpacity>
-          </View>
+        <Image style={{marginBottom: 100}}
+          source={require('../logo.png')}/>
+        <TouchableOpacity style={styles.loginButton}
+          id="login-button"
+          onPress={this.login.bind(this)}>>
+          <Image style={{margin: 8}}source={require('../fb.jpg')}/>
+          <Text style={{ margin: 8,color:"white"}}>LOGIN THROUGH FACEBOOK</Text>
+        </TouchableOpacity>
         </View>
       );
     }

@@ -4,7 +4,7 @@ import {
   ScrollView, StyleSheet, 
   Text, TouchableOpacity,
   View, Button,
-  TextInput,
+  TextInput, ActivityIndicator,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   event: {
     opacity: 0.75 ,
     position: "absolute",
-    zIndex: 6,
+    zIndex: 4,
     width: "100%",
     marginLeft: 70,
     flex: 1,
@@ -123,23 +123,34 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 25,
   },  
+  loading: {
+    zIndex: 6,
+    justifyContent: "center",
+    position: "absolute",
+    flex: 1,
+    top: 0,
+    bottom: 0,
+    right:0 ,
+    left: 0,
+  },
 });
 
 export default class CalTab extends React.Component {
   constructor(props){
     super(props);
     var now = new Date();
-    var initialScreen = props.screen ? props.screen : 1;
     
     this.state = {
       /**
        * 1: Month
        * 2: Day
        */
-      screen: initialScreen,
+      screen: 1,
       day: now,
       isTimePickerVisible: false,
       editingEvent: {},
+      loading: false,
+      isNewEvent: false,
     };
     if(props.editingEvent){
       this.state.editingEvent = props.editingEvent;
@@ -162,23 +173,6 @@ export default class CalTab extends React.Component {
       : i%12+1 + " am";
     }
     this.state.eventDates = [
-      {
-        date: "2018-11-10",
-        events: [
-          {
-            key: 0,
-            title: "birthday party",
-            startTime: 0.5,
-            endTime: 1.5,
-          },
-          {
-            key: 1,
-            title: "dentist",
-            startTime: 2,
-            endTime: 2.5,
-          }
-        ]
-      }
     ];
     this.state.hours = hours.map(function(item){
       return (
@@ -247,7 +241,12 @@ export default class CalTab extends React.Component {
         .then((response) => {return response.json();})
         .then((responseData) => {
           var syncEvents = this.syncEvents.bind(this);
-          syncEvents(responseData.items);
+          this.setState((previousState)  => {
+            var newState = previousState;
+            newState.loading = true;
+            return {newState};
+          });
+          setTimeout(() => syncEvents(responseData.items), 0);
         }).catch((error) => {
           alert(error);
           return error;
@@ -263,22 +262,30 @@ export default class CalTab extends React.Component {
       
       var newEvent = {
         title: event.summary,
-        startTime: this.timeToFraction(start),
-        endTime: this.timeToFraction(end),
+        startTime: start,
+        endTime: end,
+        startNum: this.timeToFraction(start),
+        endNum: this.timeToFraction(end),
       };
       var addEvent = this.addEvent.bind(this);
       if(event.recurrence){
         if(event.recurrence[0].includes("RRULE:FREQ=WEEKLY")){
           //alert(JSON.stringify(event));
-          for(var i = 0; i < 25; i++){
-            addEvent(newEvent, start);
+          for(var i = 0; i < 10; i++){
+            addEvent(newEvent, start, null, editable=false);
             start.setDate(start.getDate()+7);
           }
         }
       }
       else{
-        addEvent(newEvent,start);
+        addEvent(newEvent,start,null,editable=false);
       }
+    });
+    
+    this.setState((previousState)  => {
+      var newState = previousState;
+      newState.loading = false;
+      return {newState};
     });
     var saveCalendar = this.saveCalendar.bind(this);
     //saveCalendar();
@@ -287,7 +294,8 @@ export default class CalTab extends React.Component {
   /* Actually sets calendar state to add new event, called from multiple places 
      NewEvent should have keys: title, startTime, endTime
   */
-  addEvent(newEvent, day, callback=null){
+  addEvent(newEvent, day, callback=null,editable=true){
+    newEvent['editable'] = editable;
     this.setState((previousState)  => {
       var found = false;
       var formattedDay = this.getDateFormat(day);
@@ -296,12 +304,22 @@ export default class CalTab extends React.Component {
         var eventDate = newState.eventDates[i];
         if(eventDate.date === formattedDay){
           found = true;
-          newEvent.key = eventDate.events.length;
-          newState.eventDates[i].events.push(newEvent);
+          if(newEvent.key != null){
+            for(var j = 0; j < newState.eventDates[i].events.length; j++){
+              if(newState.eventDates[i].events[j].key == newEvent.key){
+                newState.eventDates[i].events[j] = newEvent;
+              }
+            }
+          }
+          else{
+            newEvent['key'] = eventDate.events.length;
+            newState.eventDates[i].events.push(newEvent);
+          }
+          break;
         }
       }
       if(!found){
-        newEvent.key = 0;
+        newEvent['key'] = 0;
         this.state.eventDates.push({
           date: formattedDay,
           events: [newEvent],
@@ -315,19 +333,46 @@ export default class CalTab extends React.Component {
     }
   }
 
+  /* Deletes event from in-app calendar and database */
+  deleteEvent(){
+    this.setState((previousState)  => {
+      var event = this.state.editingEvent;
+      var formattedDay = this.getDateFormat(event.start);
+      var newState = previousState;
+      for(var i = 0; i < newState.eventDates.length; i++){
+        var eventDate = newState.eventDates[i];
+        if(eventDate.date === formattedDay){
+          for(var j = 0; j < eventDate.events.length; j++){
+            if(eventDate.events[j].key == event.key){
+
+              newState.eventDates[i].events.splice(j,1);
+              break;
+            }
+          }
+          break;
+        }
+      }
+      newState.screen = 1;
+      return {newState}
+    });
+  }
+
   /* Sets screen to create event page */
   createEvent(){
     this.setState((previousState)  => {
       var newState = previousState;
       newState.screen = 2;
       var now = new Date();
-      var later = new Date(now);
-      now.setMinutes(0);
+      var start = new Date(newState.day);
+      var later = new Date(newState.day);
+      start.setMinutes(0);
       later.setMinutes(0);
+      start.setHours(now.getHours());
       later.setHours(later.getHours()+1);
+      newState.isNewEvent = true;
       newState.editingEvent = {
         "title": "",
-        "start": now,
+        "start": start,
         "end": later,
       };
       return {newState};
@@ -335,9 +380,20 @@ export default class CalTab extends React.Component {
   }
 
   editEvent(event){
+    if(!event.editable){
+      alert("Event added via Google calendar is not editable")
+      return;
+    }
     this.setState((previousState)  => {
       var newState = previousState;
+      newState.editingEvent = {
+        "key": event.key,
+        "title": event.title,
+        "start": event.startTime,
+        "end": event.endTime,
+      };
       newState.screen = 2;
+      newState.isNewEvent = false;
       return {newState};
     });
   }
@@ -351,10 +407,19 @@ export default class CalTab extends React.Component {
 
   /* Creates event in calendar (called from event creation page) */
   saveEvent(){
+    var startNum = this.timeToFraction(this.state.editingEvent.start);
+    var endNum = this.timeToFraction(this.state.editingEvent.end);
+    if(startNum >= endNum){
+      alert("Invalid start and end times");
+      return;
+    }
     var newEvent = {
+      key: this.state.editingEvent.key,
       title: this.state.editingEvent.title,
-      startTime: this.timeToFraction(this.state.editingEvent.start),
-      endTime: this.timeToFraction(this.state.editingEvent.end),
+      startTime: this.state.editingEvent.start,
+      endTime: this.state.editingEvent.end,
+      startNum: startNum,
+      endNum: endNum,
     };
     var addEvent = this.addEvent.bind(this);
     addEvent(newEvent,this.state.day, this.saveCalendar);
@@ -461,14 +526,17 @@ export default class CalTab extends React.Component {
   renderDay(){
     var events = null;
     var dateString = this.getDateFormat(this.state.day);
+    var editEvent = this.editEvent.bind(this);
     for(var i = 0; i < this.state.eventDates.length; i++){
       var item = this.state.eventDates[i];
       if(item.date === dateString){
         events = item.events.map(function(event){
           return (
-          <View key={event.key} top={50*event.startTime} onPress={() => this.editEvent(event)}
-            height={50*(event.endTime-event.startTime)} style={styles.event}>
+          <View key={event.key} top={50*event.startNum}
+            height={50*(event.endNum-event.startNum)} style={styles.event}>
+          <TouchableOpacity style={{flex:1}} onPress={() => editEvent(event)}>
             <Text style={styles.eventText}>{event.title}</Text>
+          </TouchableOpacity>
           </View>);
         });
       }
@@ -520,6 +588,15 @@ export default class CalTab extends React.Component {
     });
   }
 
+  waitingIndicator(state){
+    if(state.loading){
+      return ;
+    }
+    else{
+      return <View/>;
+    }
+  }
+
   render() {
     if(this.state.screen === 1){
     return (<View style={styles.container}>
@@ -545,6 +622,13 @@ export default class CalTab extends React.Component {
           />
         </TouchableOpacity>
       </View>
+      {this.state.loading ? <View style={styles.loading}>
+          <ActivityIndicator
+            color="black"
+            size="large"
+        />
+        </View>
+        : <View/>}
       <View style={{height: 600}}>
       <Agenda
       selected={this.state.day}
@@ -607,6 +691,10 @@ export default class CalTab extends React.Component {
             >
               <Text style={{fontSize:25,textAlign:"center"}}>Cancel</Text>
             </TouchableOpacity>
+            {this.state.isNewEvent ? <View/> : <TouchableOpacity style={styles.editingButton}
+              onPress={this.deleteEvent.bind(this)}>
+              <Text style={{fontSize:25,textAlign:"center", color:"red"}}>Delete</Text>
+            </TouchableOpacity>}
             </View>
             
         </View>
