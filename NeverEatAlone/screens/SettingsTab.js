@@ -110,6 +110,7 @@ export default class SettingsTab extends React.Component {
       </View>
       <View style={styles.container}>
         <ScrollView>
+          <Image source={require('../logo.png')}/>
           <TouchableOpacity id="logout-button"
             style={styles.listItem}
             onPress={this.logout.bind(this)}>

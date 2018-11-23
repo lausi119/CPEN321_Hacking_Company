@@ -1,11 +1,13 @@
 import React from "react";
 import { View,ScrollView, StyleSheet, Text, ListView,
   TouchableOpacity,
+  TextInput,
   ActivityIndicator} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { ExpoLinksView } from "@expo/samples";
 import { Platform } from "react-native";
 import ReactObserver from 'react-event-observer';
+import { API } from 'react-native-dotenv';
 
 const styles = StyleSheet.create({
   loading:{
@@ -16,10 +18,30 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
   },
+  button: {
+    width: 75,
+    borderWidth: 2,
+    backgroundColor: "#084A89",
+    borderColor: "#fff",
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  textBox: {
+    height: 140,
+    padding: 5,
+    margin: 5,
+  },
   text: {
     fontSize: 26,
-    color: "#4f603c",
+    color: "#000",
     paddingLeft: 10,
+  },
+  text2: {
+    fontSize: 14,
+    color: "#0E77DB",
+    padding: 10,
+    borderBottomWidth: 2,
+    borderColor: "#1BAEF5",
   },
   container: {
     flex: 1,
@@ -47,13 +69,22 @@ const styles = StyleSheet.create({
   red: {
     backgroundColor: "red",
   },
+  h2Container: {
+    borderBottomWidth: 2,
+    marginBottom: 8,
+    minHeight: 50,
+    borderColor: "#fff",
+    backgroundColor: "#0E77DB",
+    borderBottomRightRadius: 35,
+    borderBottomLeftRadius: 35,
+  },
   h2: {
     flex: 1,
-    paddingTop: 15,
+    paddingTop: 7,
+    paddingBottom: 7,
     paddingLeft: 15,
-    marginBottom: 7,
-    fontSize: 26,
-    backgroundColor: "#fff",
+    fontSize: 20,
+    color: "#fff",
   },
   circle: {
     marginTop: 17,
@@ -64,12 +95,15 @@ const styles = StyleSheet.create({
   },
   friend: {
     borderRadius: 14,
-    borderColor: "#000",
+    borderColor: "#1BAEF5",
     borderWidth: 0.5,
     paddingLeft: 8,
     marginLeft: 15,
     paddingTop: 5,
     paddingBottom: 5,
+    marginBottom: 5,
+    flexDirection: "column",
+    justifyContent: "space-between"
   },
   menuOption: {
     flexDirection: "row",
@@ -86,6 +120,14 @@ const styles = StyleSheet.create({
     padding: 4,
     fontSize: 36,
     color: "#4f603c"
+  },
+  messageContainer: {
+    marginTop: 20,
+    borderWidth: 3,
+    borderRadius: 12,
+    borderColor: "#084A89",
+    marginLeft: 10,
+    marginRight: 10,
   },
 });
 
@@ -104,6 +146,7 @@ export default class FriendTab extends React.Component {
       friendsBusy:[],
       finishedLoading: true,
       title: "Friends",
+      message: "",
       selectedFriend: {
       },
     };
@@ -129,8 +172,38 @@ export default class FriendTab extends React.Component {
   static navigationOptions = {
     header: null,
   };
+
+  truncDistance(distance){
+    if(distance < 0){
+        return "";
+    }
+    else if(distance < 1){
+        return "less than 1 km";
+    }
+    else{
+        distance = Math.round(distance);
+        return `${distance} km`;
+    }
+}
+
+changeMessage(text){
+  this.setState((previousState) => {
+    var newState = previousState;
+    newState.message = text;
+    return {newState};
+  })
+}
+  
   chooseVenueType(type){
     //yelp.api.call??
+    fetch(API + "addUser", 
+    {
+      method: "GET",
+    }
+    ).then((response) => {return response.text()})
+    .then((responseData) => {
+      alert(responseData);
+    })
     this.setState((previousState) => {
       var newState = previousState;
       newState.screen = 3;
@@ -189,6 +262,7 @@ export default class FriendTab extends React.Component {
           styles.circle]}/>
       </View>
         <View>
+        <Text style={styles.text2}>CHOOSE A VENUE</Text>
         <TouchableOpacity style={styles.menuOption}
         onPress={() => this.chooseVenueType("Restaurant")}>
         <Icon name={Platform.OS === "ios"
@@ -216,6 +290,23 @@ export default class FriendTab extends React.Component {
         <Text style={styles.text}>
           Bars
         </Text></TouchableOpacity>
+        </View>
+        <View style={styles.messageContainer}>
+          <TextInput multiline maxLength={160}
+            style={styles.textBox} placeholder="message..."
+            onChangeText={(text) => this.changeMessage(text)}
+            value={this.state.message}/>
+        </View>
+        <View>
+            <Text style={styles.text2}>OR, JUST SEND MESSAGE</Text>
+        </View>
+        <View style={{alignItems:"center",justifyContent:"center"}}>
+          <TouchableOpacity style={styles.button}>
+            <Icon size={40} color="#fff"
+            name={Platform.OS === "ios" 
+            ? "ios-send"
+            : "md-send"}/>
+          </TouchableOpacity>
         </View>
       </View>);
     }
@@ -253,34 +344,49 @@ export default class FriendTab extends React.Component {
         >Friends</Text>
       </View>
       <ScrollView style={styles.container}>
-      <Text style={styles.h2}>{this.state.selectedFriend.id}</Text>
       
-      <Text style={styles.h2}>Available Nearby</Text>
+      <View style={styles.h2Container}>
+        <Text style={styles.h2}>AVAILABLE NEARBY</Text>
+      </View>
       <View>
           {
             this.state.friendsOnline.map((item,index) => (
+              
               <TouchableOpacity
+              style={{flexDirection:"row"}}
               key={item.id}
               style={styles.friend}
               onPress={() => this.chooseFriend(item,true)}>
+              <View style={{flexDirection:"row",justifyContent:"space-between"}}>
               <Text style={styles.text}>
                   {item.name}
               </Text>
+              <Text style={{margin:5}}>{this.truncDistance(item.distance)}</Text>
+              </View>
+              {/*<Text style={{margin:5}}>Free until {item.nextScheduleChange}</Text>*/}
               </TouchableOpacity>
+              
           ))
           }
       </View>
-      <Text style={styles.h2}>Busy Nearby</Text>
+      <View style={styles.h2Container}>
+        <Text style={styles.h2}>BUSY NEARBY</Text>
+      </View>
       <View>
           {
             this.state.friendsBusy.map((item,index) => (
               <TouchableOpacity
+              style={{flexDirection:"row"}}
               key={item.id}
               style={styles.friend}
               onPress={() => this.chooseFriend(item,false)}>
+              <View style={{flexDirection:"row",justifyContent:"space-between"}}>
               <Text style={styles.text}>
                   {item.name}
               </Text>
+              <Text style={{margin:5}}>{this.truncDistance(item.distance)}</Text>
+              </View>
+              {/*<Text style={{margin:5}}>Busy until {item.nextScheduleChange}</Text>*/}
               </TouchableOpacity>
           ))
           }
