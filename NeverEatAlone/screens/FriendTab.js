@@ -10,13 +10,17 @@ import ReactObserver from 'react-event-observer';
 import { API } from 'react-native-dotenv';
 
 const styles = StyleSheet.create({
-  loading:{
-    alignItems: "center",
+  loading: {
+    zIndex: 6,
+    justifyContent: "center",
     position: "absolute",
-    top: 50,
-    right: 0,
-    left: 0,
+    flex: 1,
+    top: 0,
     bottom: 0,
+    right:0 ,
+    left: 0,
+    opacity: 0.7,
+    backgroundColor: "#b2b2b2"
   },
   button: {
     width: 75,
@@ -142,28 +146,61 @@ export default class FriendTab extends React.Component {
       3: Venue select
       */
       screen: 1, 
-      friendsOnline:[],
-      friendsBusy:[],
+      friends:[],
+      venues: [],
+      loading: true,
       finishedLoading: true,
       title: "Friends",
       message: "",
       selectedFriend: {
       },
     };
-    if(props.friendsOnline){
-      this.state.friendsOnline=props.friendsOnline;
-    }
-    if(props.friendsBusy){
-      this.state.friendsBusy=props.friendsBusy;
-    }
     var updateFriends = function(data){
       this.setState((previousState) => {
         var newState = previousState;
-        newState.friendsOnline = data;
+        newState.friends = data;
+        return {newState};
+      });
+    }.bind(this);
+    var finishLocation = function(){
+      this.setState((previousState) => {
+        var newState = previousState;
+        newState.loading = false;
+        return {newState};
+      });
+    }.bind(this);
+    var updateStatuses = function(data){ 
+      this.setState((previousState) => {
+        var newState = previousState;
+        for(var i = 0; i < data.length; i++){
+          for(var j = 0; j < newState.friends.length; j++){
+            if(data[i].id == newState.friends[j].id){
+              newState.friends[j].status = data[i].status;
+              break;
+            }
+          }
+        }
+        return {newState};
+      });
+    }.bind(this);
+    var updateDistances = function(data){
+      this.setState((previousState) => {
+        var newState = previousState;
+        for(var i = 0; i < data.length; i++){
+          for(var j = 0; j < newState.friends.length; j++){
+            if(data[i].id === newState.friends[j].id){
+              newState.friends[j].distance = data[i].distance;
+              break;
+            }
+          }
+        }
         return {newState};
       });
     }.bind(this);
     this.listenerFriends = global.observer.subscribe('updateFriends',updateFriends);
+    this.listenerDistances = global.observer.subscribe('updateDistances',updateDistances);
+    this.listenerLocation = global.observer.subscribe('finishLocation',finishLocation);
+    this.listenerStatuses = global.observer.subscribe('updateStatuses',updateStatuses);
   }
   locationDifference(loc1,loc2){
     return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
@@ -195,14 +232,17 @@ changeMessage(text){
 }
   
   chooseVenueType(type){
-    //yelp.api.call??
-    fetch(API + "addUser", 
+    var radius = 1000*global.userInfo.radius;
+    var url = API + `yelp?latitude=${global.userInfo.location.lat}&longitude=${global.userInfo.location.long}&radius=${radius}&term=${type}`;
+
+    fetch(url, 
     {
       method: "GET",
     }
     ).then((response) => {return response.text()})
     .then((responseData) => {
-      alert(responseData);
+      //alert((responseData)); 
+
     })
     this.setState((previousState) => {
       var newState = previousState;
@@ -239,7 +279,10 @@ changeMessage(text){
   }
 
   componentWillUnmount(){
+    this.listenerDistances.unsubscribe();
     this.listenerFriends.unsubscribe();
+    this.listenerLocation.unsubscribe();
+    this.listenerStatuses.unsubscribe();
   }
 
   render() {
@@ -339,6 +382,13 @@ changeMessage(text){
     else {
       return (
       <View style={styles.container}>
+      {this.state.loading ? <View style={styles.loading}>
+          <ActivityIndicator
+            color="black"
+            size="large"
+        />
+        </View>
+        : <View/>}
       <View style={styles.header}>
         <Text style={styles.headline}
         >Friends</Text>
@@ -350,7 +400,8 @@ changeMessage(text){
       </View>
       <View>
           {
-            this.state.friendsOnline.map((item,index) => (
+            this.state.friends.filter((item) => !!item.status)
+             .map((item,index) => (
               
               <TouchableOpacity
               style={{flexDirection:"row"}}
@@ -374,7 +425,8 @@ changeMessage(text){
       </View>
       <View>
           {
-            this.state.friendsBusy.map((item,index) => (
+            this.state.friends.filter((item) => !item.status)
+              .map((item,index) => (
               <TouchableOpacity
               style={{flexDirection:"row"}}
               key={item.id}

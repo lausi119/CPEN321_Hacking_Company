@@ -172,8 +172,8 @@ export default class CalTab extends React.Component {
       ? i%12+1 + " pm"
       : i%12+1 + " am";
     }
-    this.state.eventDates = [
-    ];
+    this.state.eventDates = [];
+    global.calendar = this.state.eventDates;
     this.state.hours = hours.map(function(item){
       return (
         <View key={item.key} style={styles.timeBlock}>
@@ -281,14 +281,14 @@ export default class CalTab extends React.Component {
         addEvent(newEvent,start,null,editable=false);
       }
     });
+    var saveCalendar = this.saveCalendar.bind(this);
+    saveCalendar(this.state.eventDates);
     
     this.setState((previousState)  => {
       var newState = previousState;
       newState.loading = false;
       return {newState};
     });
-    var saveCalendar = this.saveCalendar.bind(this);
-    //saveCalendar();
   }
 
   /* Actually sets calendar state to add new event, called from multiple places 
@@ -320,17 +320,17 @@ export default class CalTab extends React.Component {
       }
       if(!found){
         newEvent['key'] = 0;
-        this.state.eventDates.push({
+        newState.eventDates.push({
           date: formattedDay,
           events: [newEvent],
         });
       }
       newState.screen = 1;
+      if(callback){
+        (callback.bind(this))(newState.eventDates);
+      }
       return {newState};
     });
-    if(callback){
-      (callback.bind(this))();
-    }
   }
 
   /* Deletes event from in-app calendar and database */
@@ -462,14 +462,15 @@ export default class CalTab extends React.Component {
     });
   }
 
-  saveCalendar(){
+  saveCalendar(eventDates){
     var body = {
       id: global.userInfo.id,
-      eventDates: this.state.eventDates,
+      eventDates: eventDates,
     };
+    alert(JSON.stringify(body));
     fetch(`https://nevereatalone321.herokuapp.com/updateCalendar`, 
     {
-      method: "PUT",
+      method: "POST",
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -478,7 +479,7 @@ export default class CalTab extends React.Component {
     })
       .then(response => {return response.text();})
       .then((responseData) => {
-        //alert(responseData);
+        alert(responseData);
       }).catch((error) => {
         alert(error);
       });

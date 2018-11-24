@@ -1,6 +1,6 @@
 import React from "react";
 import { Platform, StatusBar, StyleSheet, View } from "react-native";
-import { AppLoading, Asset, Font, Icon } from "expo";
+import { AppLoading, Asset, Font, Icon, Notifications, Permissions} from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 import Geolocation from "react-native-geolocation-service";
 import ReactObserver from 'react-event-observer';
@@ -14,6 +14,44 @@ const styles = StyleSheet.create({
   },
 });
 
+async function registerForPushNotificationsAsync() {
+  var PUSH_ENDPOINT = API + "/push-token";
+  const { status: existingStatus } = await Permissions.getAsync(
+    Permissions.NOTIFICATIONS
+  );
+  let finalStatus = existingStatus;
+
+  // only ask if permissions have not already been determined, because
+  // iOS won't necessarily prompt the user a second time.
+  if (existingStatus !== 'granted') {
+    // Android remote notification permissions are granted during the app
+    // install, so this will only ask on iOS
+    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+    finalStatus = status;
+  }
+
+  // Stop here if the user did not grant permissions
+  if (finalStatus !== 'granted') {
+    return;
+  }
+
+  // Get the token that uniquely identifies this device
+  let token = await Notifications.getExpoPushTokenAsync();
+
+  // POST the token to your backend server from where you can retrieve it to send push notifications.
+  return fetch(PUSH_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      token: token,
+      userId: global.userInfo.id,
+    }),
+  });
+}
+
 export default class App extends React.Component {
   constructor(props){
     super(props);
@@ -26,28 +64,26 @@ export default class App extends React.Component {
   };
   
   getFriendsDistance(){
-    fetch(API + "getDistance", 
+    fetch(API + `getDistance?id=${global.userInfo.id}`, 
       {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "id": global.userInfo.id,
-        }),
+        method: "GET"
       })
         .then((response) => {return response.json();})
         .then((responseData) => {
-          for(var j = 0; j < responseData.distances.length; j++){
-            for(var i = 0; i < global.userInfo.friends.length; i++){
-              var friend = global.userInfo.friends[i];
-              if(friend.id == responseData.distances[j].id){
-                global.userInfo.friends[i].distance = responseData.distances[j].distance;
-                break;
-              }
-            }
-          }
+          global.observer.publish('updateDistances', responseData);
+        }).catch((error) => {
+          alert(error);
+        });
+  }
+
+  getFriendsStatus(){ 
+    fetch(API + `getFriendsStatus?id=${global.userInfo.id}`, 
+      {
+        method: "GET"
+      })
+        .then((response) => {return response.json();})
+        .then((responseData) => {
+          global.observer.publish('updateStatuses', responseData);
         }).catch((error) => {
           alert(error);
         });
@@ -63,7 +99,8 @@ export default class App extends React.Component {
       else{
         data[i]["firstName"] = friend.name;
       }
-      data[i]["distance"] = Math.random()*10;
+      data[i]["distance"] = -1;
+      data[i]["status"] = false;
     }
     return data;
   }
@@ -73,7 +110,7 @@ export default class App extends React.Component {
     var email = data.email;
     var coords = data.location;
     var friendIds = data.friends.map((friend) => {
-      return friend.id;
+      return {'id': friend.id};
     }); 
     var body = JSON.stringify({
       "user": {
@@ -82,8 +119,10 @@ export default class App extends React.Component {
         "email": email,
         "coordinates": coords,
         "friends": friendIds,
-      }
+      },
+      "calendar": [],
     });
+   
     fetch(API + "addUser", 
       {
         method: "POST",
@@ -140,8 +179,8 @@ export default class App extends React.Component {
         global.userInfo['location'] = location;
         //uploadPosition(data.id,location);
         data['location'] = location;
-        global.observer.publish('loading', true);
         callback(data);
+        global.observer.publish('finishLocation');
       },
       (error) => {
         var location = {
@@ -151,7 +190,7 @@ export default class App extends React.Component {
         data['location'] = location;
         global.userInfo['location'] = location;
         callback(data);
-        global.finishedLoading = true;
+        global.observer.publish('finishLocation');
         //console.log(error.message);
       },
       { enableHighAccuracy: true, 
@@ -188,6 +227,10 @@ export default class App extends React.Component {
             email: responseData.email,
             friends: friends,
           };
+          var getFriendsDistance = this.getFriendsDistance.bind(this);
+          getFriendsDistance(); 
+          var getFriendsStatus = this.getFriendsStatus.bind(this);
+          getFriendsStatus();
           this.getPosition(data,this.addUpdateUser.bind(this));
         }).catch((error) => {
           alert(error);

@@ -3,7 +3,7 @@ import{
   Image,
   ScrollView,StyleSheet,
   Text,TouchableOpacity,
-  View, Button,
+  View, Slider,
   Platform, Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -56,10 +56,22 @@ export default class SettingsTab extends React.Component {
   constructor(props){
     super(props);
     this.navigation = props.navigation;
+    this.state = {
+      radius: global.userInfo.radius,
+    }
   }
   static navigationOptions = {
     header: null,
   };
+
+  changeRadius(radius){
+    this.setState((previousState) => {
+      var newState = previousState;
+      newState.radius = radius;
+      return newState;
+    })
+    global.userInfo.radius = radius;
+  }
 
   logout(){
     global.userInfo = null,
@@ -111,6 +123,15 @@ export default class SettingsTab extends React.Component {
       <View style={styles.container}>
         <ScrollView>
           <Image source={require('../logo.png')}/>
+          <View style={styles.listItem}>
+            <View style={{flex:1}}>
+            <Text>Search radius</Text>
+            <Slider value={this.state.radius} step={1}
+              minimumValue={1} maximumValue={15} 
+              onValueChange={(value) => this.changeRadius(value)}/>
+            </View>
+            <Text style={{flex:1}}>{this.state.radius} km</Text>
+          </View>
           <TouchableOpacity id="logout-button"
             style={styles.listItem}
             onPress={this.logout.bind(this)}>

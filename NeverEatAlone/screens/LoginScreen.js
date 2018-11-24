@@ -49,6 +49,7 @@ export default class LoginScreen extends React.Component {
     if (type === "success") {
       global.userInfo = {
         'accessToken': token,
+        'radius': 25,
       };
       global.loggedIn = true;
       global.startRefresh();
