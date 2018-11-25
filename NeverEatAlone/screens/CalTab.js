@@ -658,7 +658,12 @@ export default class CalTab extends React.Component {
           <Text style={styles.headerButton}></Text>
         </View>
         <View style={styles.container}>
-          <TextInput id="title-edit" style={styles.textBox} placeholder="Title"
+          <TextInput id="title-edit" style={styles.textBox}
+            onKeyPress={(event) => {
+              if(event.nativeEvent.key == 'Enter'){
+                Keyboard.dismiss();
+              }
+            }} placeholder="Title"
             onChangeText={(text) => this.changeTitle(text)}
             value={this.state.editingEvent.title}/>
 

@@ -1,8 +1,8 @@
 import React from "react";
 import { View,ScrollView, StyleSheet, Text, ListView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator} from "react-native";
+  TouchableOpacity,Alert,
+  TextInput, Image,
+  ActivityIndicator, Keyboard} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { ExpoLinksView } from "@expo/samples";
 import { Platform } from "react-native";
@@ -109,6 +109,19 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between"
   },
+  venue: {
+    borderRadius: 14,
+    borderColor: "#022263",
+    borderWidth: 3,
+    paddingLeft: 8,
+    marginLeft: 15,
+    marginRight: 15,
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginBottom: 5,
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
   menuOption: {
     flexDirection: "row",
     borderRadius: 14,
@@ -189,7 +202,7 @@ export default class FriendTab extends React.Component {
         for(var i = 0; i < data.length; i++){
           for(var j = 0; j < newState.friends.length; j++){
             if(data[i].id === newState.friends[j].id){
-              newState.friends[j].distance = data[i].distance;
+              newState.friends[j].distance = data[i].distance/1000;
               break;
             }
           }
@@ -202,9 +215,20 @@ export default class FriendTab extends React.Component {
     this.listenerLocation = global.observer.subscribe('finishLocation',finishLocation);
     this.listenerStatuses = global.observer.subscribe('updateStatuses',updateStatuses);
   }
-  locationDifference(loc1,loc2){
-    return Math.sqrt(Math.abs(loc1.lat-loc2.lat),
-      Math.abs(loc1.long-loc2.long));
+  
+  locationDifference(loc2){
+    if(!global.userInfo){
+        return -1;
+    }
+    var loc1 = global.userInfo.location;
+    if(!loc1){
+        return -1;
+    }
+    var x = Math.abs(loc1.lat-loc2.latitude);
+    var y = Math.abs(loc1.long-loc2.longitude);
+    y *= 111.320*Math.cos((loc2.latitude+loc1.lat)/2);
+    x *= 110.574;
+    return Math.sqrt(x*x+y*y);
   }
   static navigationOptions = {
     header: null,
@@ -239,16 +263,20 @@ changeMessage(text){
     {
       method: "GET",
     }
-    ).then((response) => {return response.text()})
+    ).then((response) => {return response.json();})
     .then((responseData) => {
-      //alert((responseData)); 
-
+      venues = JSON.parse(JSON.parse(responseData.Recommendations).body).businesses;
+      
+      this.setState((previousState) => {
+        var newState = previousState;
+        newState.screen = 3;
+        newState.venues = venues;
+        newState.finishedLoading = false;
+        return {newState};
+      });
     })
-    this.setState((previousState) => {
-      var newState = previousState;
-      newState.screen = 3;
-      newState.finishedLoading = false;
-      return {newState};
+    .catch((err) => {
+      alert(err);
     });
   }
   chooseFriend(item, online){
@@ -264,6 +292,7 @@ changeMessage(text){
     this.setState((previousState) => {
       var newState = previousState;
       newState.screen = 1;
+      newState.message = "";
       newState.selectedFriend = {};
       return {newState};
     });
@@ -278,11 +307,115 @@ changeMessage(text){
     }
   }
 
+  parseWholeObject(obj){
+    for(var key in obj){
+      try{
+        var subObj = JSON.parse(obj[key]);
+        if(typeof subObj == 'object'){
+          obj[key] = parseWholeObject(subObj);
+        }
+      }
+      catch(err){}
+    }
+  }
+
+  sendOnlyMessage(){
+    var body =  JSON.stringify({
+      id: global.userInfo.id,
+      name: global.userInfo.name,
+      //id2: this.state.selectedFriend.id,
+      id2: global.userInfo.id,
+      data: {
+        message: this.state.message,
+        venueName: "",
+        coords: {
+            "lat": 0,
+            "long": 0
+        },
+      }
+    });
+    fetch(API + "sendInvite",{
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+    }).then((response) => {return response.text();})
+    .then((responseData) => {
+      alert(responseData);
+    })
+    .catch((err) => {
+      alert(err);
+    });
+
+    this.resetScreen();
+  }
+
   componentWillUnmount(){
     this.listenerDistances.unsubscribe();
     this.listenerFriends.unsubscribe();
     this.listenerLocation.unsubscribe();
     this.listenerStatuses.unsubscribe();
+  }
+
+  inviteVenue(venue){
+    var invite = () => {
+      var body =  JSON.stringify({
+        id: global.userInfo.id,
+        name: global.userInfo.name,
+        //id2: this.state.selectedFriend.id,
+        id2: global.userInfo.id,
+        data: {
+          message: this.state.message,
+          venueName: venue.name,
+          coords: {
+            lat: venue.coordinates.latitude,
+            long: venue.coordinates.longitude,
+          },
+        }
+      });
+      fetch(API + "sendInvite",{
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: body,
+      }).then((response) => {return response.text();})
+      .then((responseData) => {
+        alert(responseData);
+      })
+      .catch((err) => {
+        alert(err);
+      });
+
+      this.resetScreen();
+    }
+    Alert.alert(
+      title=`Invite ${this.state.selectedFriend.firstName} to ${venue.name}?`,
+      message=  "",
+      buttons=[
+          {text: 'Cancel', style: 'cancel'},
+          {text: 'OK', onPress: invite.bind(this)},
+      ],
+      options={cancelable: false}
+    )
+  }
+
+  renderVenue(item){
+    return ( 
+      <TouchableOpacity onPress={() => this.inviteVenue(item)} style={styles.venue} key={item.id}>
+        <Image source={{uri: item.image_url}}
+          style={{width: 80, height: 80, marginRight: 20}}/>
+        <View style={{flex: 1}}>
+          <Text style={{fontSize:20}}>{item.name}</Text>
+          <Text>{item.display_address}</Text>
+          <Text>{this.truncDistance(this.locationDifference(item.coordinates))}</Text>
+          <Text>Rating: {item.rating}</Text>
+        </View>
+      </TouchableOpacity>
+    );
   }
 
   render() {
@@ -335,7 +468,12 @@ changeMessage(text){
         </Text></TouchableOpacity>
         </View>
         <View style={styles.messageContainer}>
-          <TextInput multiline maxLength={160}
+          <TextInput multiline maxLength={160} returnKeyType={"done"}
+            onKeyPress={(event) => {
+              if(event.nativeEvent.key == 'Enter'){
+                Keyboard.dismiss();
+              }
+            }}
             style={styles.textBox} placeholder="message..."
             onChangeText={(text) => this.changeMessage(text)}
             value={this.state.message}/>
@@ -344,7 +482,7 @@ changeMessage(text){
             <Text style={styles.text2}>OR, JUST SEND MESSAGE</Text>
         </View>
         <View style={{alignItems:"center",justifyContent:"center"}}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity onPress={this.sendOnlyMessage.bind(this)} style={styles.button}>
             <Icon size={40} color="#fff"
             name={Platform.OS === "ios" 
             ? "ios-send"
@@ -372,10 +510,10 @@ changeMessage(text){
           styles.green: styles.red,
           styles.circle]}/>
       </View>
-        <View style={styles.container}>
-        {this.waiting()}
-        </View>
-        </View>
+        <ScrollView style={styles.container}>
+          {this.state.venues.map((item) => {return this.renderVenue(item);})}
+        </ScrollView>
+      </View>
       );
     }
     //FRIEND LIST

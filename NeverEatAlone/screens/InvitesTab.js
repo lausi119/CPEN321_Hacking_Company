@@ -146,6 +146,8 @@ export default class InvitesTab extends React.Component {
         ],
         finishedLoading: true,
       };
+      var pushInvite = this.pushInvite.bind(this);
+      this.listenerInvite = global.observer.subscribe('invite',pushInvite);
       if(props.screen){
           this.state.screen = props.screen;
       }
@@ -153,6 +155,13 @@ export default class InvitesTab extends React.Component {
   static navigationOptions = {
     header: null,
   };
+  pushInvite(invite){
+    this.setState((previousState) => {
+        var newState = previousState;
+        newState.invites.push(invite);
+        return newState;
+    });
+  }
   truncText(text){
     text = text.trim();
     if(text.length == 0){
@@ -245,6 +254,10 @@ export default class InvitesTab extends React.Component {
         }
     }
     this.resetScreen();
+  }
+
+  componentWillUnmount(){
+    this.listenerInvite.unsubscribe();
   }
 
   renderMessage(msg){

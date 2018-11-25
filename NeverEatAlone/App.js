@@ -1,11 +1,13 @@
 import React from "react";
-import { Platform, StatusBar, StyleSheet, View } from "react-native";
+import { Platform, StatusBar, StyleSheet, View } 
+  from "react-native";
 import { AppLoading, Asset, Font, Icon, Notifications, Permissions} from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 import Geolocation from "react-native-geolocation-service";
 import ReactObserver from 'react-event-observer';
 global.observer = ReactObserver();
 import { API } from 'react-native-dotenv';
+//import registerForPushNotificationsAsync from './registerForPushNotificationsAsync';
 
 const styles = StyleSheet.create({
   container: {
@@ -13,44 +15,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 });
-
-async function registerForPushNotificationsAsync() {
-  var PUSH_ENDPOINT = API + "/push-token";
-  const { status: existingStatus } = await Permissions.getAsync(
-    Permissions.NOTIFICATIONS
-  );
-  let finalStatus = existingStatus;
-
-  // only ask if permissions have not already been determined, because
-  // iOS won't necessarily prompt the user a second time.
-  if (existingStatus !== 'granted') {
-    // Android remote notification permissions are granted during the app
-    // install, so this will only ask on iOS
-    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-    finalStatus = status;
-  }
-
-  // Stop here if the user did not grant permissions
-  if (finalStatus !== 'granted') {
-    return;
-  }
-
-  // Get the token that uniquely identifies this device
-  let token = await Notifications.getExpoPushTokenAsync();
-
-  // POST the token to your backend server from where you can retrieve it to send push notifications.
-  return fetch(PUSH_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      token: token,
-      userId: global.userInfo.id,
-    }),
-  });
-}
 
 export default class App extends React.Component {
   constructor(props){
@@ -72,7 +36,8 @@ export default class App extends React.Component {
         .then((responseData) => {
           global.observer.publish('updateDistances', responseData);
         }).catch((error) => {
-          alert(error);
+          alert("Get distance error");
+          //alert(error);
         });
   }
 
@@ -85,7 +50,8 @@ export default class App extends React.Component {
         .then((responseData) => {
           global.observer.publish('updateStatuses', responseData);
         }).catch((error) => {
-          alert(error);
+          alert("Get status error");
+          //alert(error);
         });
   }
   
@@ -100,11 +66,11 @@ export default class App extends React.Component {
         data[i]["firstName"] = friend.name;
       }
       data[i]["distance"] = -1;
-      data[i]["status"] = false;
+      data[i]["status"] = true;
     }
     return data;
   }
-  addUpdateUser(data){
+  async addUpdateUser(data){
     var id = data.id;
     var name = data.name;
     var email = data.email;
@@ -112,13 +78,29 @@ export default class App extends React.Component {
     var friendIds = data.friends.map((friend) => {
       return {'id': friend.id};
     }); 
+    
+  
+    var pushToken = "";
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+
+    if (existingStatus !== 'granted') {
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+    if (finalStatus === 'granted') {
+      pushToken = await Notifications.getExpoPushTokenAsync();
+    }
     var body = JSON.stringify({
       "user": {
-        "id": id,
-        "name": name,
-        "email": email,
-        "coordinates": coords,
-        "friends": friendIds,
+      "id": id,
+      "name": name,
+      "email": email,
+      "coordinates": coords,
+      "friends": friendIds,
+      "pushToken": pushToken,
       },
       "calendar": [],
     });
@@ -148,7 +130,6 @@ export default class App extends React.Component {
       id: global.userInfo.id,
       location: global.userInfo.location,
     });
-    alert(body);
     fetch(API + "updateLocation", 
     {
       method: "PUT",
@@ -252,9 +233,27 @@ export default class App extends React.Component {
   stopRefresh() {
     clearInterval(this.state.refreshInterval);
   }
+  handleNotification = (notification) => {
+    global.observer.publish("invite", notification);
+  }
   componentDidMount(){
+    //registerForPushNotificationsAsync();
+    this.notificationSubscription = Notifications.addListener(this.handleNotification);
     global.startRefresh = this.startRefresh.bind(this);
     global.stopRefresh = this.stopRefresh.bind(this);
+  }
+  getCalendar(){
+    fetch(API + "getCalendar",
+    {
+      method:"GET"
+    })
+    .then((response) => {return response.json();})
+    .then((responseData) => {
+      global.observer.publish("calendar", responseData);
+    })
+    .catch((err) =>{
+      alert(err);
+    })
   }
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
