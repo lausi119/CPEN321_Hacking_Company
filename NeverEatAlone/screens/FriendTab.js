@@ -238,12 +238,15 @@ export default class FriendTab extends React.Component {
     if(distance < 0){
         return "";
     }
+    else if(distance <= 1){
+      return "1 meter away";
+    }
     else if(distance < 1){
-        return "less than 1 km";
+        return `${distance*1000} meters away`;
     }
     else{
         distance = Math.round(distance);
-        return `${distance} km`;
+        return `${distance} km away`;
     }
 }
 
@@ -320,13 +323,16 @@ changeMessage(text){
   }
 
   sendOnlyMessage(){
+
     var body =  JSON.stringify({
-      id: global.userInfo.id,
+      id1: global.userInfo.id,
       name: global.userInfo.name,
-      //id2: this.state.selectedFriend.id,
-      id2: global.userInfo.id,
+      id2: this.state.selectedFriend.id,
+      //id2: global.userInfo.id,
       data: {
-        message: this.state.message,
+        id: global.userInfo.id,
+        name: global.userInfo.name,
+        message: this.state.message.trim(),
         venueName: "",
         coords: {
             "lat": 0,
@@ -343,7 +349,7 @@ changeMessage(text){
       body: body,
     }).then((response) => {return response.text();})
     .then((responseData) => {
-      alert(responseData);
+      //alert(responseData);
     })
     .catch((err) => {
       alert(err);
@@ -362,11 +368,12 @@ changeMessage(text){
   inviteVenue(venue){
     var invite = () => {
       var body =  JSON.stringify({
-        id: global.userInfo.id,
-        name: global.userInfo.name,
-        //id2: this.state.selectedFriend.id,
-        id2: global.userInfo.id,
+        id1: global.userInfo.id,
+        id2: this.state.selectedFriend.id,
+        //id2: global.userInfo.id,
         data: {
+          id: global.userInfo.id,
+          name: global.userInfo.name,
           message: this.state.message,
           venueName: venue.name,
           coords: {
@@ -384,7 +391,7 @@ changeMessage(text){
         body: body,
       }).then((response) => {return response.text();})
       .then((responseData) => {
-        alert(responseData);
+        //alert(responseData);
       })
       .catch((err) => {
         alert(err);
@@ -471,6 +478,7 @@ changeMessage(text){
           <TextInput multiline maxLength={160} returnKeyType={"done"}
             onKeyPress={(event) => {
               if(event.nativeEvent.key == 'Enter'){
+                this.state.message = this.state.message.trim();
                 Keyboard.dismiss();
               }
             }}

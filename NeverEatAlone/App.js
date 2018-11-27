@@ -78,8 +78,7 @@ export default class App extends React.Component {
     var friendIds = data.friends.map((friend) => {
       return {'id': friend.id};
     }); 
-    
-  
+      
     var pushToken = "";
     const { status: existingStatus } = await Permissions.getAsync(
       Permissions.NOTIFICATIONS
@@ -102,7 +101,6 @@ export default class App extends React.Component {
       "friends": friendIds,
       "pushToken": pushToken,
       },
-      "calendar": [],
     });
    
     fetch(API + "addUser", 
@@ -174,12 +172,12 @@ export default class App extends React.Component {
         global.observer.publish('finishLocation');
         //console.log(error.message);
       },
-      { enableHighAccuracy: true, 
+      { enableHighAccuracy: false, 
         timeout: 1500, maximumAge: 1000}
     );
   }
   
-  refreshFriends(){
+  refreshFriends(first = false){
     
     if(global.userInfo.accessToken){
       fetch(`https://graph.facebook.com/me?fields=id,name,friends,picture&access_token=${global.userInfo.accessToken}`, 
@@ -213,20 +211,26 @@ export default class App extends React.Component {
           var getFriendsStatus = this.getFriendsStatus.bind(this);
           getFriendsStatus();
           this.getPosition(data,this.addUpdateUser.bind(this));
+
+          if(first){      
+            var getCalendar = this.getCalendar.bind(this);
+            getCalendar();
+          }
         }).catch((error) => {
           alert(error);
         });
     }
     return 0;
   }
-  refreshAll(){
+  refreshAll(first=false){
     var refreshFriends = this.refreshFriends.bind(this);
-    refreshFriends();
+    refreshFriends(first);
     return 0;
   }
   startRefresh() {
+
     var refreshAll = this.refreshAll.bind(this);
-    refreshAll();
+    refreshAll(true);
     this.state.refreshInterval = 
       setInterval(refreshAll,60*1000);
   }
@@ -234,6 +238,7 @@ export default class App extends React.Component {
     clearInterval(this.state.refreshInterval);
   }
   handleNotification = (notification) => {
+    alert('notification: '+JSON.stringify(notification));
     global.observer.publish("invite", notification);
   }
   componentDidMount(){
@@ -243,15 +248,21 @@ export default class App extends React.Component {
     global.stopRefresh = this.stopRefresh.bind(this);
   }
   getCalendar(){
-    fetch(API + "getCalendar",
+    fetch(API + `getCalendar?id=${global.userInfo.id}`,
     {
       method:"GET"
     })
     .then((response) => {return response.json();})
     .then((responseData) => {
-      global.observer.publish("calendar", responseData);
+      try{
+        global.userInfo.eventDates = responseData[0].eventDates;
+      }
+      catch(err){
+        global.userInfo.eventDates = [];
+      }
     })
     .catch((err) =>{
+      alert('get calendar error');
       alert(err);
     })
   }

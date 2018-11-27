@@ -122,7 +122,7 @@ export default class InvitesTab extends React.Component {
         invites: [
             {
                 key: 0,
-                friendId: "100",
+                id: "100",
                 friendName: "Harsh Arora",
                 venueName: "McDonalds",
                 coords: {
@@ -155,9 +155,19 @@ export default class InvitesTab extends React.Component {
   static navigationOptions = {
     header: null,
   };
-  pushInvite(invite){
+  pushInvite(data){
     this.setState((previousState) => {
         var newState = previousState;
+        var invite = data.data.withSome;
+        var found = false;
+        for(var i = 0; i < newState.invites.length; i++){
+            if(newState.invites.key != i){
+                invite['key'] = i;
+            }
+        }
+        if(!found){
+            invite['key'] = newState.invites.length;
+        }
         newState.invites.push(invite);
         return newState;
     });

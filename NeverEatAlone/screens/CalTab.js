@@ -9,6 +9,7 @@ import {
 import { Agenda } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "react-native-modal-datetime-picker";
+import ReactObserver from 'react-event-observer';
 import Expo from 'expo';
 import { GOOGLE_API_URL} from 'react-native-dotenv';
 
@@ -172,8 +173,6 @@ export default class CalTab extends React.Component {
       ? i%12+1 + " pm"
       : i%12+1 + " am";
     }
-    this.state.eventDates = [];
-    global.calendar = this.state.eventDates;
     this.state.hours = hours.map(function(item){
       return (
         <View key={item.key} style={styles.timeBlock}>
@@ -282,7 +281,7 @@ export default class CalTab extends React.Component {
       }
     });
     var saveCalendar = this.saveCalendar.bind(this);
-    saveCalendar(this.state.eventDates);
+    saveCalendar(global.userInfo.eventDates);
     
     this.setState((previousState)  => {
       var newState = previousState;
@@ -298,36 +297,38 @@ export default class CalTab extends React.Component {
     newEvent['editable'] = editable;
     this.setState((previousState)  => {
       var found = false;
-      var formattedDay = this.getDateFormat(day);
       var newState = previousState;
-      for(var i = 0; i < newState.eventDates.length; i++){
-        var eventDate = newState.eventDates[i];
+      var options = { year: "numeric", month: "numeric", day: "numeric" }; 
+      var formattedDay = day.toLocaleDateString("en-us", options);
+      alert(formattedDay);
+      for(var i = 0; i < global.userInfo.eventDates.length; i++){
+        var eventDate = global.userInfo.eventDates[i];
         if(eventDate.date === formattedDay){
           found = true;
           if(newEvent.key != null){
-            for(var j = 0; j < newState.eventDates[i].events.length; j++){
-              if(newState.eventDates[i].events[j].key == newEvent.key){
-                newState.eventDates[i].events[j] = newEvent;
+            for(var j = 0; j < global.userInfo.eventDates[i].events.length; j++){
+              if(global.userInfo.eventDates[i].events[j].key == newEvent.key){
+                global.userInfo.eventDates[i].events[j] = newEvent;
               }
             }
           }
           else{
             newEvent['key'] = eventDate.events.length;
-            newState.eventDates[i].events.push(newEvent);
+            global.userInfo.eventDates[i].events.push(newEvent);
           }
           break;
         }
       }
       if(!found){
         newEvent['key'] = 0;
-        newState.eventDates.push({
+        global.userInfo.eventDates.push({
           date: formattedDay,
           events: [newEvent],
         });
       }
       newState.screen = 1;
       if(callback){
-        (callback.bind(this))(newState.eventDates);
+        (callback.bind(this))(global.userInfo.eventDates);
       }
       return {newState};
     });
@@ -337,15 +338,15 @@ export default class CalTab extends React.Component {
   deleteEvent(){
     this.setState((previousState)  => {
       var event = this.state.editingEvent;
-      var formattedDay = this.getDateFormat(event.start);
+      var formattedDay = event.start.toLocalDateString();
       var newState = previousState;
-      for(var i = 0; i < newState.eventDates.length; i++){
-        var eventDate = newState.eventDates[i];
+      for(var i = 0; i < global.userInfo.eventDates.length; i++){
+        var eventDate = global.userInfo.eventDates[i];
         if(eventDate.date === formattedDay){
           for(var j = 0; j < eventDate.events.length; j++){
             if(eventDate.events[j].key == event.key){
 
-              newState.eventDates[i].events.splice(j,1);
+              global.userInfo.eventDates[i].events.splice(j,1);
               break;
             }
           }
@@ -368,6 +369,7 @@ export default class CalTab extends React.Component {
       start.setMinutes(0);
       later.setMinutes(0);
       start.setHours(now.getHours());
+      later.setDate(later.getDay()+1)
       later.setHours(later.getHours()+1);
       newState.isNewEvent = true;
       newState.editingEvent = {
@@ -467,7 +469,7 @@ export default class CalTab extends React.Component {
       id: global.userInfo.id,
       eventDates: eventDates,
     };
-    alert(JSON.stringify(body));
+    
     fetch(`https://nevereatalone321.herokuapp.com/updateCalendar`, 
     {
       method: "POST",
@@ -479,7 +481,7 @@ export default class CalTab extends React.Component {
     })
       .then(response => {return response.text();})
       .then((responseData) => {
-        alert(responseData);
+        //alert(responseData);
       }).catch((error) => {
         alert(error);
       });
@@ -526,10 +528,12 @@ export default class CalTab extends React.Component {
 
   renderDay(){
     var events = null;
-    var dateString = this.getDateFormat(this.state.day);
+    var options = { year: "numeric", month: "numeric", day: "numeric" }; 
+    var dateString = this.state.day.toLocaleDateString("en-us", options);
     var editEvent = this.editEvent.bind(this);
-    for(var i = 0; i < this.state.eventDates.length; i++){
-      var item = this.state.eventDates[i];
+    for(var i = 0; i < global.userInfo.eventDates.length; i++){
+      var item = global.userInfo.eventDates[i];
+      //alert(JSON.stringify(item));
       if(item.date === dateString){
         events = item.events.map(function(event){
           return (
@@ -596,6 +600,9 @@ export default class CalTab extends React.Component {
     else{
       return <View/>;
     }
+  }
+
+  componentWillUnmount(){
   }
 
   render() {
