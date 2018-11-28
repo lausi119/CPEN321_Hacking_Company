@@ -134,6 +134,14 @@ const styles = StyleSheet.create({
     right:0 ,
     left: 0,
   },
+  nowLine:{
+    backgroundColor:"red",
+    position:"absolute",
+    height:1,
+    width: "100%",
+    zIndex:5
+  }
+
 });
 
 export default class CalTab extends React.Component {
@@ -400,7 +408,6 @@ export default class CalTab extends React.Component {
 
   /* Converts Date time to number (0-24) */
   timeToFraction(time){
-    alert(time);
     var h = time.getHours();
     var m = time.getMinutes();
     return h + m/60;
@@ -534,6 +541,7 @@ export default class CalTab extends React.Component {
     var editEvent = this.editEvent.bind(this);
     for(var i = 0; i < global.userInfo.eventDates.length; i++){
       var item = global.userInfo.eventDates[i];
+      
       //alert(JSON.stringify(item));
       if(item.date === dateString){
         events = item.events.map(function(event){
@@ -547,14 +555,26 @@ export default class CalTab extends React.Component {
         });
       }
     };
+    alert(this.state.hours.length);
+    var initialPosition = this.timeToFraction(this.state.day)*50;
+    var now = new Date();
+    var nowLine;
+    var nowString = now.toLocaleDateString("en-us", this.options);
+    if(dateString == nowString){
+      nowLine = <View top={initialPosition} style={styles.nowLine}/>;
+    }
+    else{
+      nowLine = <View/>
+    }
     if(!events){
       events = <View/>;
     }
     return (
       <View>
-      <ScrollView ref='_scrollView' style={styles.container}>
+      <ScrollView ref='_scrollView' contentOffset={{x: 0, y: initialPosition-250}} style={styles.container}>
         {this.state.hours}
         {events}
+        {nowLine}
       </ScrollView>
       </View>
     );
