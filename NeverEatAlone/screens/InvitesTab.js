@@ -1,12 +1,13 @@
 import React from "react";
 import{
-  Alert,
+  Alert, Image,
   ScrollView,StyleSheet,
   Text,TouchableOpacity,
   View, Button,
   Platform, ActivityIndicator
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import {API} from "react-native-dotenv";
 
 const styles = StyleSheet.create({
   icon: {
@@ -119,59 +120,21 @@ export default class InvitesTab extends React.Component {
          */
         screen: 1,
         selectedInvite: {},
-        invites: [
-            {
-                key: 0,
-                id: "100",
-                friendName: "Harsh Arora",
-                venueName: "McDonalds",
-                coords: {
-                    "lat": 49.268429,
-                    "long": -123.168485
-                },
-                "message": `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. `
-            },
-            {
-                key: 1,
-                friendId: "100",
-                coords: {
-                    "lat": 49.266391,
-                    "long": -123.245188
-                },
-                friendName: "Laurenz Schmielau",
-                venueName: "Pacific Poke",
-                "message": "   "
-            }
-        ],
         finishedLoading: true,
       };
-      var pushInvite = this.pushInvite.bind(this);
-      this.listenerInvite = global.observer.subscribe('invite',pushInvite);
+      
       if(props.screen){
           this.state.screen = props.screen;
       }
+      var updateInvites = function(){
+        this.forceUpdate();
+      }.bind(this);
+
+      this.invitesListener = global.observer.subscribe('invites', updateInvites);
   }
   static navigationOptions = {
     header: null,
   };
-  pushInvite(data){
-    this.setState((previousState) => {
-        var newState = previousState;
-        var invite = data.data.withSome;
-        var found = false;
-        for(var i = 0; i < newState.invites.length; i++){
-            if(newState.invites.key != i){
-                invite['key'] = i;
-            }
-        }
-        if(!found){
-            invite['key'] = newState.invites.length;
-        }
-        newState.invites.push(invite);
-        return newState;
-    });
-  }
   truncText(text){
     text = text.trim();
     if(text.length == 0){
@@ -183,23 +146,25 @@ export default class InvitesTab extends React.Component {
     return '"' + text + '"';
   }
   truncDistance(distance){
-      if(distance < 0){
-          return "";
-      }
-      else if(distance < 1){
-          return "less than 1 km";
-      }
-      else{
-          distance = Math.round(distance);
-          return `${distance} km`;
-      }
+    if(isNaN(distance) || distance < 0){
+        return "";
+    }
+    else if(distance < 1){
+        distance = Math.round(1000*distance);
+        return `${distance} meters away`;
+    }
+    else{
+        distance = Math.round(distance);
+        return `${distance} km away`;
+    }
   }
   locationDifference(loc2){
-    if(!global.userInfo){
+    if(!global.userInfo || !loc2){
         return -1;
     }
     var loc1 = global.userInfo.location;
     if(!loc1){
+    
         return -1;
     }
     var x = Math.abs(loc1.lat-loc2.lat);
@@ -230,13 +195,14 @@ export default class InvitesTab extends React.Component {
     var clear = () => {
         this.setState((previousState) => {
             var newState = previousState;
-            newState.invites = [];
+            global.userInfo.invites = [];
             newState.selectedInvite = {};
             return {newState};
         });
     };
+    var len = global.userInfo.invites.length;
     Alert.alert(
-        title='Clear all invites?',
+        title=`Clear all ${len} invite${len != 1 ? "s" : ""}?`,
         message="",
         buttons=[
             {text: 'Cancel', style: 'cancel'},
@@ -247,31 +213,85 @@ export default class InvitesTab extends React.Component {
   }
 
   accept(){
-    for(var i = 0; i < this.state.invites.length; i++){
-        if(this.state.selectedInvite.key == this.state.invites[i].key){
-            this.state.invites[i].accepted = true;
+    for(var i = 0; i < global.userInfo.invites.length; i++){
+        if(this.state.selectedInvite.key == global.userInfo.invites[i].key){
+            if(global.userInfo.invites[i].accpepted){
+                this.resetScreen();
+                return;
+            }
+            global.userInfo.invites[i].accepted = true;
             break;
         }
     }
     this.resetScreen();
+
+    var body =  JSON.stringify({
+        id1: global.userInfo.id,
+        id2: this.state.selectedInvite.id,
+        data: {
+          response: true,
+          accept: true,
+          id: global.userInfo.id,
+          friendName: global.userInfo.name,
+        }
+    });
+    fetch(API + `sendInvite`,
+    {
+      method:"POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+    })
+    .then((response) => {return response.json();})
+    .then((responseData) => {
+    })
+    .catch((err) =>{
+      alert('get calendar error');
+      alert(err);
+    });
   }
 
   decline(){
-    for(var i = 0; i < this.state.invites.length; i++){
-        if(this.state.selectedInvite.key == this.state.invites[i].key){
-            this.state.invites.splice(i,1);
+    var body =  JSON.stringify({
+        id1: global.userInfo.id,
+        id2: this.state.selectedInvite.id,
+        data: {
+          response: true,
+          accept: false,
+          id: global.userInfo.id,
+          friendName: global.userInfo.name,
+        }
+    });
+    fetch(API + `sendInvite`,
+    {
+      method:"POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+    })
+    .then((response) => {return response.json();})
+    .then((responseData) => {
+    })
+    .catch((err) =>{
+      alert('get calendar error');
+      alert(err);
+    });
+
+    for(var i = 0; i < global.userInfo.invites.length; i++){
+        if(this.state.selectedInvite.key == global.userInfo.invites[i].key){
+            global.userInfo.invites.splice(i,1);
             break;
         }
     }
     this.resetScreen();
   }
 
-  componentWillUnmount(){
-    this.listenerInvite.unsubscribe();
-  }
-
   renderMessage(msg){
-    if(!msg || msg.trim().length != 0){
+    if(msg && msg.trim().length != 0){
         return <View style={styles.infoBox}>
                     <View>
                         <Text style={styles.lApostrophe}>&ldquo;</Text>
@@ -287,11 +307,20 @@ export default class InvitesTab extends React.Component {
     }
   }
 
+  componentWillUnmount(){
+      this.invitesListener.unsubscribe();
+  }
+
   renderInvite(item){
     return (
         <TouchableOpacity onPress={() => this.selectInvite(item)} key={item.key} style={styles.inviteBox}>
             <View style={{paddingLeft:15,paddingRight:15}}>
-                <Icon name="ios-car" size={50}/>
+                {item.venueImage.length > 0
+                    ?<Image source={{uri: item.venueImage}}
+                        style={{width: 50, height: 50, marginRight: 12}}/>
+                    :<Icon name={Platform.OS === "ios" ?
+                        "ios-person" : "md-person"} size={50}/>
+                }
             </View>
             <View style={styles.column}>
                 <View style={{flexDirection:"row"}}>
@@ -332,7 +361,7 @@ export default class InvitesTab extends React.Component {
             <View style={styles.container}>
                 <ScrollView id="invite-list">
                 {
-                    this.state.invites.map((item,index) => (
+                    global.userInfo.invites.map((item,index) => (
                         this.renderInvite(item)
                     ))
                 }
@@ -355,13 +384,20 @@ export default class InvitesTab extends React.Component {
             </View>
             <View style={styles.container}>
                 <View style={styles.infoBox}/>
-                <View style={styles.infoBox}>
+                {this.state.selectedInvite.venueName
+                ?<View style={styles.infoBox}>
                     <View>
                         <Text style={{padding: 8,fontSize:12}}>wants to meet at</Text>
                         <Text style={styles.text}>{this.state.selectedInvite.venueName}</Text>
+                        <Text style={styles.text}>{this.truncDistance(this.locationDifference(this.state.selectedInvite.coords))}</Text>
                     </View>
-                    <Text style={styles.text}>{this.truncDistance(this.locationDifference(this.state.selectedInvite.coords))}</Text>
+                    <View>
+                        <Image source={{uri: this.state.selectedInvite.venueImage}}
+                        style={{width: 80, height: 80, marginRight: 12}}/>
+                    </View>
                 </View>
+                :<View/>
+                }
                 {this.renderMessage(this.state.selectedInvite.message)}
                 <View style={{margin:20,flexDirection:"row",justifyContent:"space-around"}}>
                 <TouchableOpacity id="accept" onPress={this.accept.bind(this)} style={styles.acceptButton}>

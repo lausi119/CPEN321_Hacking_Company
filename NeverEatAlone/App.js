@@ -78,7 +78,7 @@ export default class App extends React.Component {
     var friendIds = data.friends.map((friend) => {
       return {'id': friend.id};
     }); 
-      
+
     var pushToken = "";
     const { status: existingStatus } = await Permissions.getAsync(
       Permissions.NOTIFICATIONS
@@ -192,7 +192,6 @@ export default class App extends React.Component {
         .then((responseData) => {
           global.userInfo['id'] = responseData.id;
           global.userInfo['name'] = responseData.name;
-          //this.getHashedId(responseData.id);
           global.userInfo['photoUrl'] = responseData.picture.data.url;
               
           global.userInfo['email'] = responseData.email;
@@ -237,9 +236,26 @@ export default class App extends React.Component {
   stopRefresh() {
     clearInterval(this.state.refreshInterval);
   }
-  handleNotification = (notification) => {
-    alert('notification: '+JSON.stringify(notification));
-    global.observer.publish("invite", notification);
+  handleNotification = (data) => {
+    var invite = data.data.withSome;
+    if(invite.response){
+      alert(`${invite.friendName} ${invite.accept ? "accepted" : "declined"} your request`);
+      return;
+    }
+    var found = false;
+    for(var i = 0; i < global.userInfo.invites.length; i++){
+      if(global.userInfo.invites[i].key != i){
+        found = true;
+        invite['key'] = i;
+        break;
+      }
+    }
+    if(!found){
+      invite['key'] = global.userInfo.invites.length;
+    }
+    alert(`Invitation from ${invite.friendName}`);
+    global.userInfo.invites.push(invite);
+    global.observer.publish('invites');
   }
   componentDidMount(){
     //registerForPushNotificationsAsync();
@@ -264,7 +280,7 @@ export default class App extends React.Component {
     .catch((err) =>{
       alert('get calendar error');
       alert(err);
-    })
+    });
   }
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {

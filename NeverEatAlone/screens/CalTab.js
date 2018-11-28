@@ -140,6 +140,7 @@ export default class CalTab extends React.Component {
   constructor(props){
     super(props);
     var now = new Date();
+    this.options = { year: "numeric", month: "numeric", day: "numeric" }; 
     
     this.state = {
       /**
@@ -298,9 +299,7 @@ export default class CalTab extends React.Component {
     this.setState((previousState)  => {
       var found = false;
       var newState = previousState;
-      var options = { year: "numeric", month: "numeric", day: "numeric" }; 
-      var formattedDay = day.toLocaleDateString("en-us", options);
-      alert(formattedDay);
+      var formattedDay = day.toLocaleDateString("en-us", this.options);
       for(var i = 0; i < global.userInfo.eventDates.length; i++){
         var eventDate = global.userInfo.eventDates[i];
         if(eventDate.date === formattedDay){
@@ -338,7 +337,8 @@ export default class CalTab extends React.Component {
   deleteEvent(){
     this.setState((previousState)  => {
       var event = this.state.editingEvent;
-      var formattedDay = event.start.toLocalDateString();
+      var formattedDay = new Date(event.start);
+      formattedDay = formattedDay.toLocaleDateString("en-us", this.options);
       var newState = previousState;
       for(var i = 0; i < global.userInfo.eventDates.length; i++){
         var eventDate = global.userInfo.eventDates[i];
@@ -356,6 +356,8 @@ export default class CalTab extends React.Component {
       newState.screen = 1;
       return {newState}
     });
+    var saveCalendar = this.saveCalendar.bind(this);
+    saveCalendar();
   }
 
   /* Sets screen to create event page */
@@ -382,10 +384,6 @@ export default class CalTab extends React.Component {
   }
 
   editEvent(event){
-    if(!event.editable){
-      alert("Event added via Google calendar is not editable")
-      return;
-    }
     this.setState((previousState)  => {
       var newState = previousState;
       newState.editingEvent = {
@@ -402,6 +400,7 @@ export default class CalTab extends React.Component {
 
   /* Converts Date time to number (0-24) */
   timeToFraction(time){
+    alert(time);
     var h = time.getHours();
     var m = time.getMinutes();
     return h + m/60;
@@ -513,6 +512,9 @@ export default class CalTab extends React.Component {
 
   /* Converts date object to "HH:MM am/pm" format */
   getTimeFormat(time){
+    if(typeof time == "string"){
+      time = new Date(time);
+    }
     var h = time.getHours();
     var m = time.getMinutes();
     if(m < 10){
@@ -528,8 +530,7 @@ export default class CalTab extends React.Component {
 
   renderDay(){
     var events = null;
-    var options = { year: "numeric", month: "numeric", day: "numeric" }; 
-    var dateString = this.state.day.toLocaleDateString("en-us", options);
+    var dateString = this.state.day.toLocaleDateString("en-us", this.options);
     var editEvent = this.editEvent.bind(this);
     for(var i = 0; i < global.userInfo.eventDates.length; i++){
       var item = global.userInfo.eventDates[i];

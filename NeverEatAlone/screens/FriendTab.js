@@ -238,11 +238,12 @@ export default class FriendTab extends React.Component {
     if(distance < 0){
         return "";
     }
-    else if(distance <= 1){
+    else if(distance <= .001){
       return "1 meter away";
     }
     else if(distance < 1){
-        return `${distance*1000} meters away`;
+      distance = Math.round(1000*distance);
+      return `${distance} meters away`;
     }
     else{
         distance = Math.round(distance);
@@ -262,6 +263,13 @@ changeMessage(text){
     var radius = 1000*global.userInfo.radius;
     var url = API + `yelp?latitude=${global.userInfo.location.lat}&longitude=${global.userInfo.location.long}&radius=${radius}&term=${type}`;
 
+    this.setState((previousState) => {
+      var newState = previousState;
+      newState.screen = 3;
+      newState.venues = venues;
+      newState.finishedLoading = false;
+      return {newState};
+    });
     fetch(url, 
     {
       method: "GET",
@@ -270,13 +278,6 @@ changeMessage(text){
     .then((responseData) => {
       venues = JSON.parse(JSON.parse(responseData.Recommendations).body).businesses;
       
-      this.setState((previousState) => {
-        var newState = previousState;
-        newState.screen = 3;
-        newState.venues = venues;
-        newState.finishedLoading = false;
-        return {newState};
-      });
     })
     .catch((err) => {
       alert(err);
@@ -326,17 +327,18 @@ changeMessage(text){
 
     var body =  JSON.stringify({
       id1: global.userInfo.id,
-      name: global.userInfo.name,
       id2: this.state.selectedFriend.id,
       //id2: global.userInfo.id,
       data: {
+        response: false,
         id: global.userInfo.id,
-        name: global.userInfo.name,
+        friendName: global.userInfo.name,
         message: this.state.message.trim(),
         venueName: "",
+        venueImage: "",
         coords: {
-            "lat": 0,
-            "long": 0
+          lat: global.userInfo.location.lat,
+          long: global.userInfo.location.long,
         },
       }
     });
@@ -372,10 +374,12 @@ changeMessage(text){
         id2: this.state.selectedFriend.id,
         //id2: global.userInfo.id,
         data: {
+          response: false,
           id: global.userInfo.id,
-          name: global.userInfo.name,
+          friendName: global.userInfo.name,
           message: this.state.message,
           venueName: venue.name,
+          venueImage: venue.image_url,
           coords: {
             lat: venue.coordinates.latitude,
             long: venue.coordinates.longitude,
@@ -542,7 +546,7 @@ changeMessage(text){
       <ScrollView style={styles.container}>
       
       <View style={styles.h2Container}>
-        <Text style={styles.h2}>AVAILABLE NEARBY</Text>
+        <Text style={styles.h2}>AVAILABLE</Text>
       </View>
       <View>
           {
@@ -567,7 +571,7 @@ changeMessage(text){
           }
       </View>
       <View style={styles.h2Container}>
-        <Text style={styles.h2}>BUSY NEARBY</Text>
+        <Text style={styles.h2}>BUSY</Text>
       </View>
       <View>
           {

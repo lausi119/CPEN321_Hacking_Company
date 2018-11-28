@@ -83,7 +83,7 @@ export default class SettingsTab extends React.Component {
 
   deleteAccount(){
     var del = () => {
-      fetch(API + "deleteAccount", {
+      fetch(API + "deleteUser", {
         method: "DELETE",
         headers: {
           "Accept": "application/json",
@@ -94,7 +94,6 @@ export default class SettingsTab extends React.Component {
         }),
       }
       ).then((response) => {
-        alert(response.text());
         (this.logout.bind(this))();
       })
       .catch((err) => {

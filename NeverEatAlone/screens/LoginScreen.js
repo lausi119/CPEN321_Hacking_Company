@@ -39,6 +39,8 @@ export default class LoginScreen extends React.Component {
     global.userInfo = {
       'accessToken': '',
       'friends': [],
+      'eventDates': [],
+      'invites': [],
     };
     // Uncomment this line only when testing app without login.
     // Comment everything below out if you do
@@ -51,6 +53,9 @@ export default class LoginScreen extends React.Component {
       global.userInfo = {
         'accessToken': token,
         'radius': 15,
+        'friends': [],
+        'eventDates': [],
+        'invites': [],
       };
       global.loggedIn = true;
       global.startRefresh();
