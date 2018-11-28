@@ -491,7 +491,6 @@ export default class CalTab extends React.Component {
       }).catch((error) => {
         alert(error);
       });
-
   }
 
   renderItem(item) {
@@ -555,8 +554,8 @@ export default class CalTab extends React.Component {
         });
       }
     };
-    var initialPosition = this.timeToFraction(this.state.day)*50;
     var now = new Date();
+    var initialPosition = this.timeToFraction(now)*50;
     var nowLine;
     var nowString = now.toLocaleDateString("en-us", this.options);
     if(dateString == nowString){
@@ -567,6 +566,9 @@ export default class CalTab extends React.Component {
     }
     if(!events){
       events = <View/>;
+    }
+    if(initialPosition < 0){
+      initialPosition = 0;
     }
     return (
       <View>

@@ -64,11 +64,9 @@ describe('App snapshot', () => {
     const component = shallow(<LoginScreen/>);
     expect(component).toMatchSnapshot();
 	
+	
 	expect(component.containsMatchingElement(
-		<Icon name="ios-log-in" size={50}/>)
-	).toBeTruthy();
-	expect(component.containsMatchingElement(
-		<Text>LOGIN</Text>)
+		<Text>LOGIN THROUGH FACEBOOK</Text>)
 	).toBeTruthy();
   });
   
@@ -91,13 +89,7 @@ describe('App snapshot', () => {
 		  "name": "Mark Zuck",
 	  },
 	  ];
-	  var friendsBusy = [
-	  {
-		  "id": "100030219080466",
-		  "name": "Elon Musk",
-	  },
-	  ];
-	const component = shallow(<FriendTab/>);
+	const component = shallow(<FriendTab friends={friendsOnline}/>);
 	friendsOnline.forEach((item) => {
 		expect(component.containsMatchingElement(
 			<TouchableOpacity key={item.id}>
@@ -177,6 +169,7 @@ describe('App snapshot', () => {
 		}
 		ad = !ad;
 	}
+	
   });
 	
   it('navigates to SettingsTab and logs out', async () => {
