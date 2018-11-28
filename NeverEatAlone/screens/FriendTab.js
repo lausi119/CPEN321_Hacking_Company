@@ -266,7 +266,7 @@ changeMessage(text){
     this.setState((previousState) => {
       var newState = previousState;
       newState.screen = 3;
-      newState.venues = venues;
+      newState.venues = [];
       newState.finishedLoading = false;
       return {newState};
     });
@@ -276,8 +276,12 @@ changeMessage(text){
     }
     ).then((response) => {return response.json();})
     .then((responseData) => {
-      venues = JSON.parse(JSON.parse(responseData.Recommendations).body).businesses;
-      
+      var venues = JSON.parse(JSON.parse(responseData.Recommendations).body).businesses;
+      this.setState((previousState) => {
+        var newState = previousState;
+        newState.venues = venues;
+        return {newState};
+      })
     })
     .catch((err) => {
       alert(err);

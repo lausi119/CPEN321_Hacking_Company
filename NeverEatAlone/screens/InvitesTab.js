@@ -215,7 +215,7 @@ export default class InvitesTab extends React.Component {
   accept(){
     for(var i = 0; i < global.userInfo.invites.length; i++){
         if(this.state.selectedInvite.key == global.userInfo.invites[i].key){
-            if(global.userInfo.invites[i].accpepted){
+            if(global.userInfo.invites[i].accepted){
                 this.resetScreen();
                 return;
             }
@@ -395,7 +395,7 @@ export default class InvitesTab extends React.Component {
                         <Image source={{uri: this.state.selectedInvite.venueImage}}
                         style={{width: 80, height: 80, marginRight: 12}}/>
                     </View>
-                </View>
+                </View> 
                 :<View/>
                 }
                 {this.renderMessage(this.state.selectedInvite.message)}
