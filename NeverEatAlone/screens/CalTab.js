@@ -555,7 +555,6 @@ export default class CalTab extends React.Component {
         });
       }
     };
-    alert(this.state.hours.length);
     var initialPosition = this.timeToFraction(this.state.day)*50;
     var now = new Date();
     var nowLine;
